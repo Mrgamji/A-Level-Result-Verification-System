@@ -4,7 +4,7 @@ const sendMail = require('../utility/mailer');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const { User, Institution } = require('../models');
-const { JWT_SECRET } = require('../middleware/auth');
+const { JWT_SECRET, authenticateToken, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -231,6 +231,59 @@ router.post('/login', [
       success: false,
       error: 'Authentication failed',
       code: 'AUTH_ERROR'
+    });
+  }
+});
+
+// Change password for institutions
+router.put('/change-password', authenticateToken, requireRole('institution'), [
+  body('currentPassword').notEmpty().withMessage('Current password is required'),
+  body('newPassword').isLength({ min: 8 }).withMessage('New password must be at least 8 characters'),
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Validation failed',
+        details: errors.array()
+      });
+    }
+
+    const { currentPassword, newPassword } = req.body;
+
+    // Find institution and user
+    const institution = await Institution.findOne({ 
+      where: { userId: req.user.id },
+      include: { model: User, required: true }
+    });
+
+    if (!institution) {
+      return res.status(404).json({ error: 'Institution not found' });
+    }
+
+    // Verify current password
+    const isValidPassword = await bcrypt.compare(currentPassword, institution.User.password);
+    if (!isValidPassword) {
+      return res.status(400).json({ error: 'Current password is incorrect' });
+    }
+
+    // Hash new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    await institution.User.update({ password: hashedNewPassword });
+
+    res.json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+
+  } catch (error) {
+    console.error('Password change error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to change password'
     });
   }
 });

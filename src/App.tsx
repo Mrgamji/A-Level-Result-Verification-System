@@ -16,6 +16,8 @@ import Students from './pages/institution/Students';
 import AddStudent from './pages/institution/AddStudent';
 import InstitutionDashboard from './pages/institution/Dashboard';
 import Credits from './pages/institution/Credits';
+import AdminSettings from './pages/admin/Settings';
+import InstitutionSettings from './pages/institution/Settings';
 
 function App() {
   return (
@@ -107,6 +109,26 @@ function App() {
               <ProtectedRoute role="institution">
                 <DashboardLayout>
                   <Credits />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/institution/settings"
+            element={
+              <ProtectedRoute role="institution">
+                <DashboardLayout>
+                  <InstitutionSettings />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/settings"
+            element={
+              <ProtectedRoute role="admin">
+                <DashboardLayout>
+                  <AdminSettings />
                 </DashboardLayout>
               </ProtectedRoute>
             }

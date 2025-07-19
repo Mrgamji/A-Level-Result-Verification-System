@@ -7,6 +7,8 @@ import {
   FileText,
   DollarSign,
 } from 'lucide-react';
+import { useFirstLogin } from '../../hooks/useFirstLogin';
+import PasswordChangeModal from '../../components/PasswordChangeModal';
 import api from '../../utils/api';
 
 const Dashboard = () => {
@@ -20,6 +22,7 @@ const Dashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { isFirstLogin, showPasswordModal, closePasswordModal } = useFirstLogin();
 
   useEffect(() => {
     fetchDashboardStats();
@@ -106,6 +109,13 @@ const Dashboard = () => {
           ))}
         </div>
       )}
+
+      {/* Password Change Modal for First Login */}
+      <PasswordChangeModal
+        isOpen={showPasswordModal}
+        onClose={closePasswordModal}
+        isFirstLogin={isFirstLogin}
+      />
     </div>
   );
 };

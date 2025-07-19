@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Users, FileText, Search, CheckCircle, Clock, ChevronRight, Plus, List, ShieldCheck, CreditCard, Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useFirstLogin } from '../../hooks/useFirstLogin';
+import PasswordChangeModal from '../../components/PasswordChangeModal';
 import api from '../../utils/api';
 
 const Dashboard = () => {
@@ -16,6 +18,7 @@ const Dashboard = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
  
   const { user } = useAuth();
+  const { isFirstLogin, showPasswordModal, closePasswordModal } = useFirstLogin();
 
   const navigate = useNavigate();
 
@@ -238,6 +241,13 @@ const Dashboard = () => {
           </div>
         </>
       )}
+
+      {/* Password Change Modal for First Login */}
+      <PasswordChangeModal
+        isOpen={showPasswordModal}
+        onClose={closePasswordModal}
+        isFirstLogin={isFirstLogin}
+      />
     </div>
   );
 };
