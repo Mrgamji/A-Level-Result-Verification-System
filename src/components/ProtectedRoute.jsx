@@ -1,9 +1,10 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const ProtectedRoute = ({ children, role }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -14,11 +15,14 @@ const ProtectedRoute = ({ children, role }) => {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    // Redirect to login with the current location
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   if (role && user.role !== role) {
-    return <Navigate to="/" replace />;
+    // Redirect to appropriate dashboard based on user role
+    const redirectPath = user.role === 'admin' ? '/admin/dashboard' : '/institution/dashboard';
+    return <Navigate to={redirectPath} replace />;
   }
 
   return children;

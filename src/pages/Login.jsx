@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, User, Building, ArrowRight } from 'lucide-react';
-import api from '../utils/api';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -13,6 +13,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -32,23 +33,24 @@ const Login = () => {
     setError('');
 
     try {
-      // Determine endpoint based on user type
-      const endpoint = isAdmin ? '/admin/login' : '/auth/login';
+      // Prepare payload based on user type
       const payload = isAdmin 
         ? { email: credentials.email, password: credentials.password }
         : { accessCode: credentials.accessCode, password: credentials.password };
 
-      const { data } = await api.post(endpoint, payload);
+      const result = await login(payload, isAdmin ? 'admin' : 'institution');
 
-      // Store auth data
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-
-      // Redirect based on user type
-      navigate('/institution/dashboard');
+      if (result.success) {
+        // Redirect based on user role
+        const redirectPath = result.redirectTo || (result.user.role === 'admin' ? '/admin/dashboard' : '/institution/dashboard');
+        navigate(redirectPath, { replace: true });
+      } else {
+        setError(result.error || 'Login failed. Please check your credentials.');
+      }
 
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed. Please check your credentials.');
+      console.error('Login error:', err);
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }

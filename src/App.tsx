@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import DashboardLayout from './components/DashboardLayout';
@@ -17,103 +17,104 @@ import AddStudent from './pages/institution/AddStudent';
 import InstitutionDashboard from './pages/institution/Dashboard';
 import Credits from './pages/institution/Credits';
 
-
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/verify" element={<Verify />} />
-            <Route path="/institution/activate" element={<InstitutionActivation />} />
-            <Route path="/login" element={<Login />} />
-            
-            {/* Admin Routes */}
-            <Route
-              path="/admin/institutions"
-              element={
-                <ProtectedRoute role="admin">
-                  <DashboardLayout>
-                    <Institutions />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-              <Route
-              path="/admin/students"
-              element={
-                <ProtectedRoute role="admin">
-                  <DashboardLayout>
-                    <AdminStudents />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-             <Route
-              path="/admin/dashboard"
-              element={
-                <ProtectedRoute role="admin">
-                  <DashboardLayout>
-                    <AdminDashboard />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/logs"
-              element={
-                <ProtectedRoute role="admin">
-                  <DashboardLayout>
-                    <Logs />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            
-            {/* Institution Routes */}
-            <Route
-              path="/institution/students"
-              element={
-                <ProtectedRoute role="institution">
-                  <DashboardLayout>
-                    <Students />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-             <Route
-              path="/institution/dashboard"
-              element={
-                <ProtectedRoute role="institution">
-                  <DashboardLayout>
-                    <InstitutionDashboard />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/institution/add-student"
-              element={
-                <ProtectedRoute role="institution">
-                  <DashboardLayout>
-                    <AddStudent />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/institution/credits"
-              element={
-                <ProtectedRoute role="institution">
-                  <DashboardLayout>
-                    <Credits />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </Layout>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Layout><Home /></Layout>} />
+          <Route path="/verify" element={<Layout><Verify /></Layout>} />
+          <Route path="/institution/activate" element={<Layout><InstitutionActivation /></Layout>} />
+          <Route path="/login" element={<Layout><Login /></Layout>} />
+          
+          {/* Admin Routes */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute role="admin">
+                <DashboardLayout>
+                  <AdminDashboard />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/institutions"
+            element={
+              <ProtectedRoute role="admin">
+                <DashboardLayout>
+                  <Institutions />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/students"
+            element={
+              <ProtectedRoute role="admin">
+                <DashboardLayout>
+                  <AdminStudents />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/logs"
+            element={
+              <ProtectedRoute role="admin">
+                <DashboardLayout>
+                  <Logs />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Institution Routes */}
+          <Route
+            path="/institution/dashboard"
+            element={
+              <ProtectedRoute role="institution">
+                <DashboardLayout>
+                  <InstitutionDashboard />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/institution/students"
+            element={
+              <ProtectedRoute role="institution">
+                <DashboardLayout>
+                  <Students />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/institution/add-student"
+            element={
+              <ProtectedRoute role="institution">
+                <DashboardLayout>
+                  <AddStudent />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/institution/credits"
+            element={
+              <ProtectedRoute role="institution">
+                <DashboardLayout>
+                  <Credits />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Catch all route - redirect to home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </Router>
     </AuthProvider>
   );

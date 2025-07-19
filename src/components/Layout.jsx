@@ -16,27 +16,19 @@ const Layout = ({ children }) => {
 
   const isActive = (path) => location.pathname === path;
 
-  // Navigation based on role
-  const navigation = (() => {
-    if (user?.role === 'admin') {
-      return [
-        { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-        { name: 'Institutions', href: '/admin/institutions', icon: Users },
-        { name: 'Students', href: '/admin/students', icon: Users },
-        { name: 'Verification Logs', href: '/admin/logs', icon: FileText },
-      ];
-    } else if (user) {
-      return [
-        { name: 'Students', href: '/institution/students', icon: Users },
-        { name: 'Add Student', href: '/institution/add-student', icon: FileText },
-        { name: 'Verify Certificate', href: '/verify', icon: Search },
-      ];
-    } else {
-      return [
-        { name: 'Home', href: '/', icon: Search },
-      ];
-    }
-  })();
+  // Only show navigation for public pages
+  const isPublicPage = ['/', '/verify', '/institution/activate', '/login'].includes(location.pathname);
+
+  // Don't show layout navigation for dashboard pages
+  if (!isPublicPage) {
+    return children;
+  }
+
+  // Navigation for public pages
+  const navigation = [
+    { name: 'Home', href: '/', icon: Search },
+    { name: 'Verify Certificate', href: '/verify', icon: Search },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -44,19 +36,13 @@ const Layout = ({ children }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-            <Link
-  to={
-    user?.role === 'admin'
-      ? '/admin/dashboard'
-      : user
-      ? '/institution/dashboard'
-      : '/'
-  }
-  className="flex items-center space-x-2"
->
+              <Link
+                to="/"
+                className="flex items-center space-x-2"
+              >
                 <Shield className="h-8 w-8 text-blue-600" />
                 <span className="text-xl font-bold text-gray-900">
-                 A-Level Certificate Verification System
+                  A-Level Certificate Verification System
                 </span>
               </Link>
             </div>
@@ -79,12 +65,13 @@ const Layout = ({ children }) => {
 
               {user ? (
                 <div className="flex items-center space-x-2">
-                  {user.role !== 'admin' && (
-                    <div className="text-right">
-                      <div className="text-sm font-medium text-gray-900">{user.institutionName}</div>
-                      <div className="text-xs text-gray-500">{user.accessCode}</div>
-                    </div>
-                  )}
+                  <Link
+                    to={user.role === 'admin' ? '/admin/dashboard' : '/institution/dashboard'}
+                    className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                  >
+                    <LayoutDashboard className="h-4 w-4" />
+                    <span>Dashboard</span>
+                  </Link>
                   <button
                     onClick={logout}
                     className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"

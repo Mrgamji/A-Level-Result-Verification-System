@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../utils/api';
 
@@ -30,24 +29,34 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (type, credentials) => {
+  const login = async (credentials, userType = 'institution') => {
     try {
-      const endpoint = type === 'admin' ? '/admin/login' : '/auth/login';
+      const endpoint = userType === 'admin' ? '/admin/login' : '/auth/login';
       const response = await api.post(endpoint, credentials);
 
       const { token, user: userData } = response.data;
       
-      localStorage.setItem('token', response.data.token);
+      // Store auth data
+      localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(userData));
       
       // Set default auth header
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
+      // Update state
       setUser(userData);
     
-      return { success: true };
+      return { 
+        success: true, 
+        user: userData,
+        redirectTo: userData.role === 'admin' ? '/admin/dashboard' : '/institution/dashboard'
+      };
     } catch (err) {
-      throw new Error(err.response?.data?.error || 'Login failed');
+      console.error('Login error:', err);
+      return {
+        success: false,
+        error: err.response?.data?.error || 'Login failed'
+      };
     }
   };
 
