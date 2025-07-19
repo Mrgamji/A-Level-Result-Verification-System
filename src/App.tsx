@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/Layout';
+import DashboardLayout from './components/DashboardLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Verify from './pages/Verify';
@@ -14,6 +15,7 @@ import Logs from './pages/admin/Logs';
 import Students from './pages/institution/Students';
 import AddStudent from './pages/institution/AddStudent';
 import InstitutionDashboard from './pages/institution/Dashboard';
+import Credits from './pages/institution/Credits';
 
 
 function App() {
@@ -32,31 +34,39 @@ function App() {
               path="/admin/institutions"
               element={
                 <ProtectedRoute role="admin">
-                  <Institutions />
-                  </ProtectedRoute>
+                  <DashboardLayout>
+                    <Institutions />
+                  </DashboardLayout>
+                </ProtectedRoute>
               }
             />
               <Route
               path="/admin/students"
               element={
                 <ProtectedRoute role="admin">
-                  <AdminStudents />
-                  </ProtectedRoute>
+                  <DashboardLayout>
+                    <AdminStudents />
+                  </DashboardLayout>
+                </ProtectedRoute>
               }
             />
              <Route
               path="/admin/dashboard"
               element={
                 <ProtectedRoute role="admin">
-                  <AdminDashboard />
-                  </ProtectedRoute>
+                  <DashboardLayout>
+                    <AdminDashboard />
+                  </DashboardLayout>
+                </ProtectedRoute>
               }
             />
             <Route
               path="/admin/logs"
               element={
                 <ProtectedRoute role="admin">
-                  <Logs />
+                  <DashboardLayout>
+                    <Logs />
+                  </DashboardLayout>
                 </ProtectedRoute>
               }
             />
@@ -66,7 +76,9 @@ function App() {
               path="/institution/students"
               element={
                 <ProtectedRoute role="institution">
-                  <Students />
+                  <DashboardLayout>
+                    <Students />
+                  </DashboardLayout>
                 </ProtectedRoute>
               }
             />
@@ -74,7 +86,9 @@ function App() {
               path="/institution/dashboard"
               element={
                 <ProtectedRoute role="institution">
-                  <InstitutionDashboard />
+                  <DashboardLayout>
+                    <InstitutionDashboard />
+                  </DashboardLayout>
                 </ProtectedRoute>
               }
             />
@@ -82,7 +96,19 @@ function App() {
               path="/institution/add-student"
               element={
                 <ProtectedRoute role="institution">
-                  <AddStudent />
+                  <DashboardLayout>
+                    <AddStudent />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/institution/credits"
+              element={
+                <ProtectedRoute role="institution">
+                  <DashboardLayout>
+                    <Credits />
+                  </DashboardLayout>
                 </ProtectedRoute>
               }
             />

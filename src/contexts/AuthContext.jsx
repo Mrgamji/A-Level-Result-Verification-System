@@ -7,39 +7,60 @@ const AuthContext = createContext();
 
 // Create provider component
 export const AuthProvider = ({ children }) => {
-  const [authData, setAuthData] = useState(null);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Check for existing auth on mount
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+    
+    if (token && userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+        // Set default auth header
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    }
+    setLoading(false);
+  }, []);
 
   const login = async (type, credentials) => {
     try {
       const endpoint = type === 'admin' ? '/admin/login' : '/auth/login';
       const response = await api.post(endpoint, credentials);
 
+      const { token, user: userData } = response.data;
+      
       localStorage.setItem('token', response.data.token);
-      localStorage.setItem('userData', JSON.stringify({
-        user: response.data.user,
-        userType: type
-      }));
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      // Set default auth header
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-      setAuthData({
-        user: response.data.user,
-        token: response.data.token,
-        userType: type
-      });
+      setUser(userData);
     
       return { success: true };
     } catch (err) {
-      throw new Error(err.response?.data?.message || 'Login failed');
+      throw new Error(err.response?.data?.error || 'Login failed');
     }
   };
 
   const logout = () => {
-    setAuthData(null);
+    setUser(null);
     localStorage.removeItem('token');
-    localStorage.removeItem('userData');
+    localStorage.removeItem('user');
+    delete api.defaults.headers.common['Authorization'];
+    window.location.href = '/';
   };
 
   return (
-    <AuthContext.Provider value={{ authData, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

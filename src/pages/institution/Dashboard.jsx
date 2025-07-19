@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Users, FileText, Search, CheckCircle, Clock, ChevronRight, Plus, List, ShieldCheck } from 'lucide-react';
+import { Users, FileText, Search, CheckCircle, Clock, ChevronRight, Plus, List, ShieldCheck, CreditCard, Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../utils/api';
@@ -8,8 +8,8 @@ const Dashboard = () => {
   const [stats, setStats] = useState({
     totalStudents: 0,
     totalVerifications: 0,
-    totalApproved: 0,
-    totalPending: 0,
+    totalCredits: 0,
+    totalSpent: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -34,8 +34,15 @@ const Dashboard = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await api.get('/students/dashboard-stats');
-      setStats(res.data);
+      const [studentStats, creditStats] = await Promise.all([
+        api.get('/students/dashboard-stats'),
+        api.get('/payments/credits')
+      ]);
+      
+      setStats({
+        ...studentStats.data,
+        totalCredits: creditStats.data.totalCredits,
+      });
     } catch (err) {
       setError('Failed to load dashboard statistics');
       console.error('Dashboard error:', err);
@@ -84,6 +91,13 @@ const Dashboard = () => {
       hover: 'hover:bg-purple-600 hover:text-white',
       action: () => navigate('/verify'),
     },
+    {
+      title: 'Buy Credits',
+      icon: <CreditCard className="h-5 w-5" />,
+      color: 'bg-orange-100 text-orange-600',
+      hover: 'hover:bg-orange-600 hover:text-white',
+      action: () => navigate('/institution/credits'),
+    },
   ];
 
   const statCards = [
@@ -95,6 +109,13 @@ const Dashboard = () => {
       bg: 'bg-blue-50',
     },
     {
+      label: 'Available Credits',
+      value: stats.totalCredits,
+      icon: <Wallet className="h-6 w-6" />,
+      color: 'text-green-600',
+      bg: 'bg-green-50',
+    },
+    {
       label: 'Total Verifications',
       value: stats.totalVerifications,
       icon: <FileText className="h-6 w-6" />,
@@ -102,23 +123,16 @@ const Dashboard = () => {
       bg: 'bg-purple-50',
     },
     {
-      label: 'Approved',
-      value: stats.totalApproved,
-      icon: <CheckCircle className="h-6 w-6" />,
-      color: 'text-green-600',
-      bg: 'bg-green-50',
-    },
-    {
-      label: 'Pending',
-      value: stats.totalPending,
-      icon: <Clock className="h-6 w-6" />,
-      color: 'text-yellow-600',
-      bg: 'bg-yellow-50',
+      label: 'Total Spent',
+      value: `₦${(stats.totalSpent || 0).toLocaleString()}`,
+      icon: <CreditCard className="h-6 w-6" />,
+      color: 'text-orange-600',
+      bg: 'bg-orange-50',
     },
   ];
 
   return (
-    <div className="p-4 md:p-6">
+    <div className="space-y-6">
       {/* Header with Welcome and Time */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
         <div>
@@ -180,7 +194,7 @@ const Dashboard = () => {
           {/* Quick Actions */}
           <div className="mb-8">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {quickActions.map((action) => (
                 <button
                   key={action.title}
@@ -215,7 +229,7 @@ const Dashboard = () => {
             </div>
             <div className="p-4 bg-gray-50 text-right">
               <button
-                onClick={() => navigate('/admin/logs')}
+                onClick={() => navigate('/institution/credits')}
                 className="text-sm font-medium text-blue-600 hover:text-blue-800"
               >
                 View all activity →

@@ -177,6 +177,11 @@ const Verify = () => {
                   }`}>
                     {result.message}
                   </p>
+                  {result.creditsRemaining !== undefined && (
+                    <p className="text-sm text-blue-600 mt-1">
+                      Credits remaining: {result.creditsRemaining}
+                    </p>
+                  )}
                 </div>
               </div>
 
