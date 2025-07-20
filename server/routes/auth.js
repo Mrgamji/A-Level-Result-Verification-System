@@ -73,7 +73,6 @@ router.post('/activate-institution', [
         accreditationId,
         address,
         institutionType,
-        subType: institutionType === 'public' ? subType : null,
         deskOfficerPhone,
         status: 'pending',
       });

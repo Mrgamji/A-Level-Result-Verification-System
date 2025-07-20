@@ -148,6 +148,7 @@ router.put('/:id', authenticateToken, requireRole('institution'), async (req, re
       'fullName',
       'department',
       'certificateNumber',
+      'certificateType',
       'yearOfEntry',
       'yearOfGraduation',
       'classOfDegree',

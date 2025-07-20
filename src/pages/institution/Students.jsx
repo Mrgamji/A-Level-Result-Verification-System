@@ -229,10 +229,57 @@ const [studentToDelete, setStudentToDelete] = useState(null);
         }}
         className="space-y-4"
       >
-        {['fullName', 'certificateNumber', 'department', 'yearOfEntry', 'yearOfGraduation', 'classOfDegree'].map((field) => (
+        {['fullName', 'certificateNumber', 'certificateType', 'department', 'yearOfEntry', 'yearOfGraduation', 'classOfDegree'].map((field) => (
           <div key={field}>
             <label className="block text-sm font-medium capitalize mb-1">{field}</label>
-            <input
+            {field === 'certificateType' ? (
+              <select
+                value={selectedStudent[field]}
+                onChange={(e) => setSelectedStudent({ ...selectedStudent, [field]: e.target.value })}
+                className="w-full border px-3 py-2 rounded"
+                required
+              >
+                <option value="">Select certificate type</option>
+                {[
+                  'IJMB', 'JUPEB', 'NCE', 'OND', 'HND', 'PGD', 'PGDE',
+                  'A-Level WAEC (GCE)', 'Cambridge A-Level', 'NABTEB A-Level',
+                  'NBTE (Pre-ND)', 'Other Nigerian A-Level Results'
+                ].map((type) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                value={selectedStudent[field]}
+                onChange={(e) => setSelectedStudent({ ...selectedStudent, [field]: e.target.value })}
+                className="w-full border px-3 py-2 rounded"
+                required
+              />
+            )}
+          </div>
+        ))}
+        <div>
+          <label className="block text-sm font-medium capitalize mb-1">classOfDegree</label>
+          <select
+            value={selectedStudent.classOfDegree}
+            onChange={(e) => setSelectedStudent({ ...selectedStudent, classOfDegree: e.target.value })}
+            className="w-full border px-3 py-2 rounded"
+            required
+          >
+            <option value="">Select class of degree</option>
+            <option value="First Class">First Class</option>
+            <option value="Second Class Upper">Second Class Upper</option>
+            <option value="Second Class Lower">Second Class Lower</option>
+            <option value="Third Class">Third Class</option>
+            <option value="Pass">Pass</option>
+            <option value="Distinction">Distinction</option>
+            <option value="Upper Credit">Upper Credit</option>
+            <option value="Lower Credit">Lower Credit</option>
+            <option value="Merit">Merit</option>
+            <option value="Credit">Credit</option>
+          </select>
+        </div>
               type="text"
               value={selectedStudent[field]}
               onChange={(e) => setSelectedStudent({ ...selectedStudent, [field]: e.target.value })}

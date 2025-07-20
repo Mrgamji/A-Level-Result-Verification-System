@@ -260,15 +260,13 @@ const Institutions = () => {
                           <div className="text-sm font-medium text-gray-900">{institution.name}</div>
                           <div className="flex flex-wrap gap-1 mt-1">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                              institution.institutionType === 'public' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+                              institution.institutionType.includes('public') ? 'bg-blue-100 text-blue-800' : 
+                              institution.institutionType.includes('private') ? 'bg-purple-100 text-purple-800' :
+                              institution.institutionType === 'exam-body' ? 'bg-green-100 text-green-800' :
+                              'bg-gray-100 text-gray-800'
                             }`}>
-                              {institution.institutionType}
+                              {institution.institutionType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                             </span>
-                            {institution.subType && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                                {institution.subType}
-                              </span>
-                            )}
                           </div>
                         </div>
                       </div>

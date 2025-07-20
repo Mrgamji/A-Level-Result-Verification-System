@@ -209,6 +209,14 @@ const Verify = () => {
                         <p className="text-gray-900 font-semibold">{result.data.classOfDegree}</p>
                       </div>
                       <div>
+                        <span className="text-sm font-medium text-gray-500">Certificate Type</span>
+                        <div className="mt-1">
+                          <span className="bg-green-800 text-white px-3 py-1 rounded-full text-sm">
+                            {result.data.certificateType}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
                         <span className="text-sm font-medium text-gray-500">Year of Entry</span>
                         <p className="text-gray-900">{result.data.yearOfEntry}</p>
                       </div>

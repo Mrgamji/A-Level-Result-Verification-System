@@ -29,12 +29,17 @@ const Institution = sequelize.define('Institution', {
     allowNull: false,
   },
   institutionType: {
-    type: DataTypes.ENUM('private', 'public'),
+    type: DataTypes.ENUM(
+      'private-university',
+      'public-university', 
+      'public-college-of-education',
+      'private-college-of-education',
+      'public-poly',
+      'private-poly',
+      'exam-body',
+      'others'
+    ),
     allowNull: false,
-  },
-  subType: {
-    type: DataTypes.ENUM('federal', 'state'),
-    allowNull: true,
   },
   deskOfficerPhone: {
     type: DataTypes.STRING,

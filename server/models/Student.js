@@ -32,6 +32,23 @@ const Student = sequelize.define('Student', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  certificateType: {
+    type: DataTypes.ENUM(
+      'IJMB',
+      'JUPEB', 
+      'NCE',
+      'OND',
+      'HND',
+      'PGD',
+      'PGDE',
+      'A-Level WAEC (GCE)',
+      'Cambridge A-Level',
+      'NABTEB A-Level',
+      'NBTE (Pre-ND)',
+      'Other Nigerian A-Level Results'
+    ),
+    allowNull: false,
+  },
   institutionId: {
     type: DataTypes.INTEGER,
     references: {

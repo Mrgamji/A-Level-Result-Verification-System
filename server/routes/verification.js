@@ -98,6 +98,7 @@ router.post('/verify', verificationLimiter, authenticateToken, requireRole('inst
         yearOfEntry: student.yearOfEntry,
         yearOfGraduation: student.yearOfGraduation,
         classOfDegree: student.classOfDegree,
+        certificateType: student.certificateType,
       },
     });
   } catch (error) {

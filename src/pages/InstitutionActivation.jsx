@@ -20,18 +20,20 @@ const InstitutionActivation = () => {
   const navigate = useNavigate();
 
   const institutionTypes = [
-    { value: 'private', label: 'Private Institution' },
-    { value: 'public', label: 'Public Institution' }
+    { value: 'private-university', label: 'Private University' },
+    { value: 'public-university', label: 'Public University' },
+    { value: 'public-college-of-education', label: 'Public College of Education' },
+    { value: 'private-college-of-education', label: 'Private College of Education' },
+    { value: 'public-poly', label: 'Public Polytechnic' },
+    { value: 'private-poly', label: 'Private Polytechnic' },
+    { value: 'exam-body', label: 'Exam Body' },
+    { value: 'others', label: 'Others (Companies, Agencies, etc)' },
   ];
 
-  const publicSubTypes = [
-    { value: 'federal', label: 'Federal Institution' },
-    { value: 'state', label: 'State Institution' }
-  ];
 
   // Sample institution names based on type and subtype
   const institutionNames = {
-    private: [
+    'private-university': [
       'Covenant University',
       'Babcock University',
       'American University of Nigeria',
@@ -46,8 +48,7 @@ const InstitutionActivation = () => {
       'Redeemer\'s University',
       'Wesley University'
     ],
-    public: {
-      federal: [
+    'public-university': [
         'University of Ibadan',
         'University of Nigeria, Nsukka',
         'Ahmadu Bello University',
@@ -68,8 +69,8 @@ const InstitutionActivation = () => {
         'Federal University of Petroleum Resources, Effurun',
         'Nigerian Defence Academy',
         'University of Abuja'
-      ],
-      state: [
+    ],
+    'public-college-of-education': [
         'Lagos State University',
         'Kaduna State University',
         'Kano State University of Science and Technology',
@@ -97,17 +98,59 @@ const InstitutionActivation = () => {
         'Zamfara State University',
         'Yobe State University',
         'Gombe State University'
-      ]
-    }
+    ],
+    'private-college-of-education': [
+      'Adeniran Ogunsanya College of Education',
+      'Tai Solarin College of Education',
+      'Michael Otedola College of Primary Education',
+      'St. Augustine College of Education',
+      'Kwara State College of Education',
+      'Federal College of Education, Abeokuta',
+      'Federal College of Education, Akoka'
+    ],
+    'public-poly': [
+      'Yaba College of Technology',
+      'Federal Polytechnic, Nekede',
+      'Kaduna Polytechnic',
+      'Federal Polytechnic, Bida',
+      'Moshood Abiola Polytechnic',
+      'Lagos State Polytechnic',
+      'Rivers State Polytechnic',
+      'Auchi Polytechnic',
+      'Federal Polytechnic, Ilaro',
+      'Rufus Giwa Polytechnic'
+    ],
+    'private-poly': [
+      'Crown Polytechnic',
+      'Dorben Polytechnic',
+      'Gateway Polytechnic',
+      'Interlink Polytechnic',
+      'Ronik Polytechnic',
+      'Sure Foundation Polytechnic'
+    ],
+    'exam-body': [
+      'West African Examinations Council (WAEC)',
+      'National Examinations Council (NECO)',
+      'National Business and Technical Examinations Board (NABTEB)',
+      'Joint Admissions and Matriculation Board (JAMB)',
+      'Teachers Registration Council of Nigeria (TRCN)',
+      'National Board for Technical Education (NBTE)'
+    ],
+    'others': [
+      'Nigerian Immigration Service',
+      'Nigerian Police Force',
+      'Nigerian Army',
+      'Nigerian Navy',
+      'Nigerian Air Force',
+      'Federal Ministry of Education',
+      'State Ministry of Education',
+      'Corporate Training Centers',
+      'Professional Bodies'
+    ]
   };
 
   const getAvailableInstitutions = () => {
-    if (formData.institutionType === 'private') {
-      return institutionNames.private;
-    } else if (formData.institutionType === 'public' && formData.subType) {
-      return institutionNames.public[formData.subType] || [];
-    }
-    return [];
+    return institutionNames[formData.institutionType] || [];
   };
 
   const handleChange = (e) => {
@@ -116,9 +159,7 @@ const InstitutionActivation = () => {
       ...prev,
       [name]: value,
       // Reset dependent fields when parent changes
-      ...(name === 'institutionType' && value !== 'public' ? { subType: '', institutionName: '' } : {}),
-      ...(name === 'institutionType' && value === 'public' ? { institutionName: '' } : {}),
-      ...(name === 'subType' ? { institutionName: '' } : {})
+      ...(name === 'institutionType' ? { institutionName: '' } : {})
     }));
   };
 
