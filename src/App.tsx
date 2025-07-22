@@ -20,6 +20,7 @@ import AdminSettings from './pages/admin/Settings';
 import InstitutionSettings from './pages/institution/Settings';
 import Announcements from './pages/admin/Announcements';
 import Feedback from './pages/admin/Feedback';
+import InstitutionFeedback from './pages/institution/Feedback';
 
 function App() {
   return (
@@ -131,6 +132,16 @@ function App() {
               <ProtectedRoute role="institution">
                 <DashboardLayout>
                   <Credits />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/institution/feedback"
+            element={
+              <ProtectedRoute role="institution">
+                <DashboardLayout>
+                  <InstitutionFeedback />
                 </DashboardLayout>
               </ProtectedRoute>
             }

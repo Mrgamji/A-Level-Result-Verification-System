@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Users, FileText, Search, CheckCircle, Clock, ChevronRight, Plus, List, ShieldCheck, CreditCard, Wallet } from 'lucide-react';
+import { Users, FileText, Search, CheckCircle, Clock, ChevronRight, Plus, List, ShieldCheck, CreditCard, Wallet, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFirstLogin } from '../../hooks/useFirstLogin';
@@ -115,6 +115,13 @@ const Dashboard = () => {
       color: 'bg-orange-100 text-orange-600',
       hover: 'hover:bg-orange-600 hover:text-white',
       action: () => navigate('/institution/credits'),
+    },
+    {
+      title: 'Feedback & Complaints',
+      icon: <MessageSquare className="h-5 w-5" />,
+      color: 'bg-pink-100 text-pink-600',
+      hover: 'hover:bg-pink-600 hover:text-white',
+      action: () => navigate('/institution/feedback'),
     },
   ];
 

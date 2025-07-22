@@ -40,6 +40,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
     { name: 'Add Student', href: '/institution/add-student', icon: Plus },
     { name: 'Verify Certificate', href: '/verify', icon: Search },
     { name: 'Credits & Payments', href: '/institution/credits', icon: CreditCard },
+    { name: 'Feedback & Complaints', href: '/institution/feedback', icon: MessageSquare },
     { name: 'Settings', href: '/institution/settings', icon: Settings },
   ];
 
