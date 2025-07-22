@@ -12,7 +12,9 @@ import {
   Shield,
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Bell,
+  MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -25,6 +27,8 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
   const adminNavigation = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Institutions', href: '/admin/institutions', icon: Building },
+    { name: 'Announcements', href: '/admin/announcements', icon: Bell },
+    { name: 'Feedback', href: '/admin/feedback', icon: MessageSquare },
     { name: 'Students', href: '/admin/students', icon: Users },
     { name: 'Verification Logs', href: '/admin/logs', icon: FileText },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
@@ -36,6 +40,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
     { name: 'Add Student', href: '/institution/add-student', icon: Plus },
     { name: 'Verify Certificate', href: '/verify', icon: Search },
     { name: 'Credits & Payments', href: '/institution/credits', icon: CreditCard },
+    { name: 'Feedback & Complaints', href: '/institution/feedback', icon: MessageSquare },
     { name: 'Settings', href: '/institution/settings', icon: Settings },
   ];
 
@@ -48,8 +53,8 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <div className="flex items-center space-x-2">
-             <img src='/uploads/logo.png' className="h-6 w-6 object-contain" alt="Logo" />
-              <span className="text-lg font-bold text-gray-900">A-Level Result Ver..</span>
+              <Shield className="h-8 w-8 text-blue-600" />
+              <span className="text-lg font-bold text-gray-900">A-Level</span>
             </div>
           )}
           <button

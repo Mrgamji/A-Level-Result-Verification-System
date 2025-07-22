@@ -39,10 +39,21 @@ const VerificationLog = sequelize.define('VerificationLog', {
     defaultValue: DataTypes.NOW,
   },
 });
-// Example for Student.js
-VerificationLog.associate = function(models) {
-  VerificationLog.belongsTo(models.Institution, { foreignKey: 'institutionId' });
+module.exports = (sequelize, DataTypes) => {
+  const VerificationLog = sequelize.define('VerificationLog', {
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    amount: { type: DataTypes.FLOAT, allowNull: false, defaultValue: 0 },
+    institutionId: { type: DataTypes.INTEGER, allowNull: false },
+    certificateNumber: { type: DataTypes.STRING, allowNull: false },
+    ipAddress: { type: DataTypes.STRING, allowNull: false },
+    success: { type: DataTypes.BOOLEAN, defaultValue: false },
+    timestamp: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+  });
+
+  VerificationLog.associate = (models) => {
+    VerificationLog.belongsTo(models.Institution, { foreignKey: 'institutionId' });
+  };
+
+  return VerificationLog;
 };
 
-
-module.exports = VerificationLog;
