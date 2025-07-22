@@ -1,0 +1,8 @@
+fullName,certificateNumber,department,yearOfEntry,yearOfGraduation,classOfDegree,certificateType
+
+Zainab Bala,A1795A90,Political Science,2012,2016,Second Class Upper,HND
+Aisha Shehu,A6623U25,Mass Communication,2012,2018,Second Class Lower,OND
+Usman Abdullahi,A2259T25,Political Science,2010,2014,Third Class,NCE
+
+//Remove the Above 3 Samples and Add your students in the format
+//Available Certificate Types: IJMB, JUPEB, NCE, OND, HND, PGD, PGDE, A-Level WAEC (GCE), Cambridge A-Level, NABTEB A-Level, NBTE (Pre-ND), Other Nigerian A-Level Results
