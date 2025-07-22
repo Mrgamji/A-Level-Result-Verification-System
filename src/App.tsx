@@ -21,6 +21,7 @@ import InstitutionSettings from './pages/institution/Settings';
 import Announcements from './pages/admin/Announcements';
 import Feedback from './pages/admin/Feedback';
 import InstitutionFeedback from './pages/institution/Feedback';
+import InstitutionFeedback from './pages/institution/Feedback';
 
 function App() {
   return (
