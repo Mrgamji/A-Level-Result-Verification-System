@@ -18,6 +18,8 @@ import InstitutionDashboard from './pages/institution/Dashboard';
 import Credits from './pages/institution/Credits';
 import AdminSettings from './pages/admin/Settings';
 import InstitutionSettings from './pages/institution/Settings';
+import Announcements from './pages/admin/Announcements';
+import Feedback from './pages/admin/Feedback';
 
 function App() {
   return (
@@ -67,6 +69,26 @@ function App() {
               <ProtectedRoute role="admin">
                 <DashboardLayout>
                   <Logs />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/announcements"
+            element={
+              <ProtectedRoute role="admin">
+                <DashboardLayout>
+                  <Announcements />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/feedback"
+            element={
+              <ProtectedRoute role="admin">
+                <DashboardLayout>
+                  <Feedback />
                 </DashboardLayout>
               </ProtectedRoute>
             }

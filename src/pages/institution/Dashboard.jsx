@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFirstLogin } from '../../hooks/useFirstLogin';
 import PasswordChangeModal from '../../components/PasswordChangeModal';
+import AnnouncementModal from '../../components/AnnouncementModal';
 import api from '../../utils/api';
 
 const Dashboard = () => {
@@ -16,6 +17,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [announcements, setAnnouncements] = useState([]);
+  const [showAnnouncements, setShowAnnouncements] = useState(false);
  
   const { user } = useAuth();
   const { isFirstLogin, showPasswordModal, closePasswordModal } = useFirstLogin();
@@ -24,6 +27,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchStats();
+    fetchAnnouncements();
     
     // Update clock every second
     const timer = setInterval(() => {
@@ -54,6 +58,17 @@ const Dashboard = () => {
     }
   };
 
+  const fetchAnnouncements = async () => {
+    try {
+      const response = await api.get('/announcements/dashboard');
+      if (response.data.length > 0) {
+        setAnnouncements(response.data);
+        setShowAnnouncements(true);
+      }
+    } catch (error) {
+      console.error('Failed to fetch announcements:', error);
+    }
+  };
   // Format time as HH:MM:SS AM/PM
   const formatTime = (date) => {
     return date.toLocaleTimeString('en-US', {
@@ -247,6 +262,13 @@ const Dashboard = () => {
         isOpen={showPasswordModal}
         onClose={closePasswordModal}
         isFirstLogin={isFirstLogin}
+      />
+
+      {/* Announcements Modal */}
+      <AnnouncementModal
+        isOpen={showAnnouncements}
+        onClose={() => setShowAnnouncements(false)}
+        announcements={announcements}
       />
     </div>
   );

@@ -12,7 +12,9 @@ import {
   Shield,
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Bell,
+  MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -25,6 +27,8 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
   const adminNavigation = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Institutions', href: '/admin/institutions', icon: Building },
+    { name: 'Announcements', href: '/admin/announcements', icon: Bell },
+    { name: 'Feedback', href: '/admin/feedback', icon: MessageSquare },
     { name: 'Students', href: '/admin/students', icon: Users },
     { name: 'Verification Logs', href: '/admin/logs', icon: FileText },
     { name: 'Settings', href: '/admin/settings', icon: Settings },

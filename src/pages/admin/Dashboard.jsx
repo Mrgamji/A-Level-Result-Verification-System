@@ -6,6 +6,8 @@ import {
   Clock,
   FileText,
   DollarSign,
+  Bell,
+  MessageSquare,
 } from 'lucide-react';
 import { useFirstLogin } from '../../hooks/useFirstLogin';
 import PasswordChangeModal from '../../components/PasswordChangeModal';
@@ -19,6 +21,8 @@ const Dashboard = () => {
     totalPendingInstitutions: 0,
     totalVerifications: 0,
     totalRevenue: 0,
+    totalAnnouncements: 0,
+    totalFeedback: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -32,9 +36,17 @@ const Dashboard = () => {
     setLoading(true);
     setError('');
     try {
-      // You may need to implement this endpoint on your backend
-      const res = await api.get('/admin/dashboard-stats');
-      setStats(res.data);
+      const [dashboardStats, announcements, feedback] = await Promise.all([
+        api.get('/admin/dashboard-stats'),
+        api.get('/announcements'),
+        api.get('/announcements/feedback')
+      ]);
+      
+      setStats({
+        ...dashboardStats.data,
+        totalAnnouncements: announcements.data.length,
+        totalFeedback: feedback.data.filter(f => f.status === 'pending').length,
+      });
     } catch (err) {
       setError('Failed to load dashboard statistics');
     } finally {
@@ -79,6 +91,18 @@ const Dashboard = () => {
       icon: <DollarSign className="h-7 w-7 text-orange-600" />,
       bg: 'bg-orange-50',
     },
+    {
+      label: 'Active Announcements',
+      value: stats.totalAnnouncements,
+      icon: <Bell className="h-7 w-7 text-indigo-600" />,
+      bg: 'bg-indigo-50',
+    },
+    {
+      label: 'Pending Feedback',
+      value: stats.totalFeedback,
+      icon: <MessageSquare className="h-7 w-7 text-pink-600" />,
+      bg: 'bg-pink-50',
+    },
   ];
 
   return (
@@ -94,7 +118,7 @@ const Dashboard = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {cards.map((card) => (
             <div
               key={card.label}
