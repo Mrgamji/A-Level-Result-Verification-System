@@ -115,7 +115,7 @@ const Layout = ({ children }) => {
                   </Link>
                   <Link
                     to="/institution/activate"
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 round ed-md transition-colors"
                   >
                     Activate Institution
                   </Link>

@@ -187,7 +187,7 @@ const PublicVerify = () => {
               onClick={() => setActiveTab('purchase')}
               className={`flex-1 py-4 px-6 text-center font-medium transition-colors ${
                 activeTab === 'purchase'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-gradient-to-r from-green-600 to-green-800 text-white'
                   : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
               }`}
             >
@@ -198,7 +198,7 @@ const PublicVerify = () => {
               onClick={() => setActiveTab('verify')}
               className={`flex-1 py-4 px-6 text-center font-medium transition-colors ${
                 activeTab === 'verify'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-gradient-to-r from-green-600 to-green-800 text-white'
                   : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
               }`}
             >
@@ -238,7 +238,7 @@ const PublicVerify = () => {
                   <h3 className="text-xl font-bold text-green-800 mb-2">Token Purchased Successfully!</h3>
                   <div className="bg-white rounded-lg p-4 mb-4">
                     <p className="text-sm text-gray-600 mb-2">Your Verification Token:</p>
-                    <div className="font-mono text-2xl font-bold text-blue-600 bg-blue-50 p-3 rounded border-2 border-dashed border-blue-300">
+                    <div className="font-mono text-2xl font-bold text-green-700 bg-green-50 p-3 rounded border-2 border-dashed border-green-300">
                       {purchaseResult.tokenCode}
                     </div>
                   </div>
@@ -247,7 +247,7 @@ const PublicVerify = () => {
                   </p>
                   <button
                     onClick={() => setActiveTab('verify')}
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    className="bg-gradient-to-r from-green-600 to-green-800 text-white px-6 py-2 rounded-lg hover:from-green-700 hover:to-green-900 transition-colors"
                   >
                     Verify Certificate Now
                   </button>
@@ -264,7 +264,7 @@ const PublicVerify = () => {
                         name="fullName"
                         value={purchaseData.fullName}
                         onChange={(e) => handleInputChange(e, 'purchase')}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         required
                       />
                     </div>
@@ -278,7 +278,7 @@ const PublicVerify = () => {
                         name="email"
                         value={purchaseData.email}
                         onChange={(e) => handleInputChange(e, 'purchase')}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         required
                       />
                     </div>
@@ -292,7 +292,7 @@ const PublicVerify = () => {
                         name="phoneNumber"
                         value={purchaseData.phoneNumber}
                         onChange={(e) => handleInputChange(e, 'purchase')}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         placeholder="+234 xxx xxx xxxx"
                         required
                       />
@@ -307,7 +307,7 @@ const PublicVerify = () => {
                         name="organization"
                         value={purchaseData.organization}
                         onChange={(e) => handleInputChange(e, 'purchase')}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         placeholder="Company, University, etc."
                       />
                     </div>
@@ -321,7 +321,7 @@ const PublicVerify = () => {
                       name="purpose"
                       value={purchaseData.purpose}
                       onChange={(e) => handleInputChange(e, 'purchase')}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       required
                     >
                       {purposes.map(purpose => (
@@ -332,20 +332,20 @@ const PublicVerify = () => {
                     </select>
                   </div>
 
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-semibold text-blue-900">Token Price</h4>
-                        <p className="text-blue-700 text-sm">Valid for 30 days from purchase</p>
+                        <h4 className="font-semibold text-green-900">Token Price</h4>
+                        <p className="text-green-700 text-sm">Valid for 30 days from purchase</p>
                       </div>
-                      <div className="text-2xl font-bold text-blue-600">₦500</div>
+                      <div className="text-2xl font-bold text-green-700">₦500</div>
                     </div>
                   </div>
 
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="w-full bg-gradient-to-r from-green-600 to-green-800 text-white py-3 px-6 rounded-lg hover:from-green-700 hover:to-green-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
                     {loading ? (
                       <>
@@ -468,7 +468,7 @@ const PublicVerify = () => {
                           yearOfGraduation: ''
                         });
                       }}
-                      className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors mr-4"
+                      className="bg-gradient-to-r from-green-600 to-green-800 text-white px-6 py-2 rounded-lg hover:from-green-700 hover:to-green-900 transition-colors mr-4"
                     >
                       Re-Verify Certificate
                     </button>
@@ -491,7 +491,7 @@ const PublicVerify = () => {
                       name="tokenCode"
                       value={verificationData.tokenCode}
                       onChange={(e) => handleInputChange(e, 'verify')}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-lg"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 font-mono text-lg"
                       placeholder="PUB-XXXXXXXXX-XXXX"
                       required
                     />
@@ -507,7 +507,7 @@ const PublicVerify = () => {
                         name="certificateNumber"
                         value={verificationData.certificateNumber}
                         onChange={(e) => handleInputChange(e, 'verify')}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         placeholder="Enter certificate number"
                         required
                       />
@@ -522,7 +522,7 @@ const PublicVerify = () => {
                         name="yearOfGraduation"
                         value={verificationData.yearOfGraduation}
                         onChange={(e) => handleInputChange(e, 'verify')}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         min="1950"
                         max={new Date().getFullYear()}
                         required
@@ -538,7 +538,7 @@ const PublicVerify = () => {
                       name="certificateType"
                       value={verificationData.certificateType}
                       onChange={(e) => handleInputChange(e, 'verify')}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       required
                     >
                       <option value="">Select certificate type</option>
@@ -551,7 +551,7 @@ const PublicVerify = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="w-full bg-gradient-to-r from-green-600 to-green-800 text-white py-3 px-6 rounded-lg hover:from-green-700 hover:to-green-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
                     {loading ? (
                       <>
@@ -575,7 +575,7 @@ const PublicVerify = () => {
         <div className="grid md:grid-cols-3 gap-6">
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center mb-4">
-              <Shield className="h-8 w-8 text-blue-600 mr-3" />
+              <Shield className="h-8 w-8 text-green-700 mr-3" />
               <h3 className="text-lg font-semibold">Secure Verification</h3>
             </div>
             <p className="text-gray-600 text-sm">

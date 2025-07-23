@@ -193,33 +193,38 @@ const InstitutionActivation = () => {
   // Success screen
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Green blurred gradient background */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-br from-green-300 via-emerald-200 to-green-100 rounded-full blur-3xl opacity-60"></div>
+          <div className="absolute bottom-0 right-0 w-80 h-80 bg-gradient-to-tr from-emerald-200 via-green-100 to-green-50 rounded-full blur-2xl opacity-50"></div>
+        </div>
+        <div className="max-w-md w-full bg-white/80 backdrop-blur-md rounded-xl shadow-2xl overflow-hidden z-10">
+          <div className="bg-gradient-to-r from-green-600 via-emerald-500 to-green-400 p-6 text-center relative">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-white/30 rounded-full mb-4 backdrop-blur-sm">
               <CheckCircle className="h-8 w-8 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">Request Submitted!</h2>
-            <p className="text-blue-100">Your institution activation is being processed</p>
+            <p className="text-green-100">Your institution activation is being processed</p>
           </div>
           
           <div className="p-6">
             <div className="space-y-4 text-gray-600">
               <p>We've received your institution activation request. Our team will review your application and contact you within 2 business days.</p>
               
-              <div className="bg-blue-50 border-l-4 border-blue-500 p-4">
-                <h3 className="font-medium text-blue-800 mb-2">What happens next?</h3>
-                <ul className="space-y-2 text-sm text-blue-700">
+              <div className="bg-green-50/80 border-l-4 border-green-500 p-4 backdrop-blur-sm rounded">
+                <h3 className="font-medium text-green-800 mb-2">What happens next?</h3>
+                <ul className="space-y-2 text-sm text-green-700">
                   <li className="flex items-start">
-                    <span className="inline-flex items-center justify-center h-5 w-5 bg-blue-100 rounded-full mr-2 text-blue-600">1</span>
+                    <span className="inline-flex items-center justify-center h-5 w-5 bg-green-100 rounded-full mr-2 text-green-600">1</span>
                     Verification of your institution details
                   </li>
                   <li className="flex items-start">
-                    <span className="inline-flex items-center justify-center h-5 w-5 bg-blue-100 rounded-full mr-2 text-blue-600">2</span>
+                    <span className="inline-flex items-center justify-center h-5 w-5 bg-green-100 rounded-full mr-2 text-green-600">2</span>
                     Approval by our admin team
                   </li>
                   <li className="flex items-start">
-                    <span className="inline-flex items-center justify-center h-5 w-5 bg-blue-100 rounded-full mr-2 text-blue-600">3</span>
+                    <span className="inline-flex items-center justify-center h-5 w-5 bg-green-100 rounded-full mr-2 text-green-600">3</span>
                     Account credentials sent to your email
                   </li>
                 </ul>
@@ -230,7 +235,7 @@ const InstitutionActivation = () => {
             
             <button
               onClick={() => navigate('/')}
-              className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+              className="mt-6 w-full bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600 text-white font-medium py-3 px-4 rounded-lg transition-colors shadow-lg backdrop-blur-sm"
             >
               Return to Homepage
             </button>
@@ -241,8 +246,13 @@ const InstitutionActivation = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Green blurred gradient background */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-br from-green-300 via-emerald-200 to-green-100 rounded-full blur-3xl opacity-60"></div>
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-gradient-to-tr from-emerald-200 via-green-100 to-green-50 rounded-full blur-2xl opacity-50"></div>
+      </div>
+      <div className="max-w-4xl mx-auto relative z-10">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-extrabold text-gray-900 mb-3">
             Institution Activation
@@ -252,16 +262,16 @@ const InstitutionActivation = () => {
           </p>
         </div>
         
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-2xl overflow-hidden">
           {/* Form header */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 sm:p-8">
+          <div className="bg-gradient-to-r from-green-600 via-emerald-500 to-green-400 p-6 sm:p-8">
             <div className="flex items-center">
-              <div className="flex-shrink-0 bg-white/20 p-3 rounded-lg">
+              <div className="flex-shrink-0 bg-white/30 p-3 rounded-lg backdrop-blur-sm">
                 <Building className="h-6 w-6 text-white" />
               </div>
               <div className="ml-4">
                 <h2 className="text-xl font-bold text-white">Institution Details</h2>
-                <p className="text-blue-100 text-sm mt-1">
+                <p className="text-green-100 text-sm mt-1">
                   Complete all fields to request activation
                 </p>
               </div>
@@ -298,7 +308,7 @@ const InstitutionActivation = () => {
                     value={formData.institutionType}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={`block w-full pl-4 pr-10 py-3 text-base border ${errors.institutionType ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'} rounded-lg shadow-sm focus:outline-none`}
+                    className={`block w-full pl-4 pr-10 py-3 text-base border ${errors.institutionType ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-green-500 focus:border-green-500'} rounded-lg shadow-sm focus:outline-none`}
                     required
                   >
                     <option value="">Select institution type</option>
@@ -328,7 +338,7 @@ const InstitutionActivation = () => {
                       value={formData.institutionName}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      className={`block w-full pl-4 pr-10 py-3 text-base border ${errors.institutionName ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'} rounded-lg shadow-sm focus:outline-none`}
+                      className={`block w-full pl-4 pr-10 py-3 text-base border ${errors.institutionName ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-green-500 focus:border-green-500'} rounded-lg shadow-sm focus:outline-none`}
                       required
                     >
                       <option value="">Select your institution</option>
@@ -367,7 +377,7 @@ const InstitutionActivation = () => {
                         value={formData.accreditationId}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        className={`block w-full px-4 py-3 border ${errors.accreditationId ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'} rounded-lg shadow-sm focus:outline-none`}
+                        className={`block w-full px-4 py-3 border ${errors.accreditationId ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-green-500 focus:border-green-500'} rounded-lg shadow-sm focus:outline-none`}
                         placeholder="e.g. EDU/12345/2023"
                         required
                       />
@@ -392,7 +402,7 @@ const InstitutionActivation = () => {
                           value={formData.schoolEmail}
                           onChange={handleChange}
                           onBlur={handleBlur}
-                          className={`block w-full pl-10 pr-4 py-3 border ${errors.schoolEmail ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'} rounded-lg focus:outline-none`}
+                          className={`block w-full pl-10 pr-4 py-3 border ${errors.schoolEmail ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-green-500 focus:border-green-500'} rounded-lg focus:outline-none`}
                           placeholder="admin@institution.edu.ng"
                           required
                         />
@@ -416,7 +426,7 @@ const InstitutionActivation = () => {
                         value={formData.deskOfficerName}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        className={`block w-full px-4 py-3 border ${errors.deskOfficerName ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'} rounded-lg shadow-sm focus:outline-none`}
+                        className={`block w-full px-4 py-3 border ${errors.deskOfficerName ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-green-500 focus:border-green-500'} rounded-lg shadow-sm focus:outline-none`}
                         placeholder="Full name"
                         required
                       />
@@ -437,7 +447,7 @@ const InstitutionActivation = () => {
                         value={formData.deskOfficerPosition}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        className={`block w-full px-4 py-3 border ${errors.deskOfficerPosition ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'} rounded-lg shadow-sm focus:outline-none`}
+                        className={`block w-full px-4 py-3 border ${errors.deskOfficerPosition ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-green-500 focus:border-green-500'} rounded-lg shadow-sm focus:outline-none`}
                         placeholder="e.g. Registrar, Admin Officer"
                         required
                       />
@@ -464,7 +474,7 @@ const InstitutionActivation = () => {
                           value={formData.deskOfficerPhone}
                           onChange={handleChange}
                           onBlur={handleBlur}
-                          className={`block w-full pl-10 pr-4 py-3 border ${errors.deskOfficerPhone ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'} rounded-lg focus:outline-none`}
+                          className={`block w-full pl-10 pr-4 py-3 border ${errors.deskOfficerPhone ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-green-500 focus:border-green-500'} rounded-lg focus:outline-none`}
                           placeholder="e.g. 08012345678 or +2348012345678"
                           required
                         />
@@ -491,7 +501,7 @@ const InstitutionActivation = () => {
                         value={formData.address}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        className={`block w-full pl-10 pr-4 py-3 border ${errors.address ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'} rounded-lg focus:outline-none`}
+                        className={`block w-full pl-10 pr-4 py-3 border ${errors.address ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-green-500 focus:border-green-500'} rounded-lg focus:outline-none`}
                         placeholder="Full physical address including city and state"
                         required
                       />
@@ -509,7 +519,7 @@ const InstitutionActivation = () => {
                           id="terms"
                           name="terms"
                           type="checkbox"
-                          className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                          className="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300 rounded"
                           required
                         />
                       </div>
@@ -529,14 +539,14 @@ const InstitutionActivation = () => {
                     <button
                       type="button"
                       onClick={() => navigate('/')}
-                      className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={loading || isSubmitting}
-                      className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                      className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-500 text-white font-medium rounded-lg hover:from-green-700 hover:to-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg backdrop-blur-sm"
                     >
                       {loading ? (
                         <>
@@ -558,7 +568,7 @@ const InstitutionActivation = () => {
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-500">
             Need help? Contact our support team at{' '}
-            <a href="mailto:support@certverify.ng" className="text-blue-600 hover:text-blue-800">
+            <a href="mailto:support@certverify.ng" className="text-green-600 hover:text-green-800">
               support@certverify.ng
             </a>
           </p>
