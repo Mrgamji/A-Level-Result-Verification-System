@@ -7,6 +7,8 @@ const Credit = require('./Credit');
 const Payment = require('./Payment');
 const Announcement = require('./Announcement');
 const Feedback = require('./Feedback');
+const PublicToken = require('./PublicToken');
+const PublicVerification = require('./PublicVerification');
 
 // ========== Associations ========== //
 
@@ -50,6 +52,10 @@ Feedback.belongsTo(Announcement, { foreignKey: 'announcementId' });
 User.hasMany(Feedback, { foreignKey: 'respondedBy' });
 Feedback.belongsTo(User, { foreignKey: 'respondedBy', as: 'Responder' });
 
+// PUBLIC TOKEN -> PUBLIC VERIFICATION
+PublicToken.hasMany(PublicVerification, { foreignKey: 'tokenId' });
+PublicVerification.belongsTo(PublicToken, { foreignKey: 'tokenId' });
+
 // Export models and sequelize
 module.exports = {
   sequelize,
@@ -61,4 +67,6 @@ module.exports = {
   Payment,
   Announcement,
   Feedback,
+  PublicToken,
+  PublicVerification,
 };
