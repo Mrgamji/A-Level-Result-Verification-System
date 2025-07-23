@@ -53,6 +53,7 @@ const Dashboard = () => {
         api.get('/students/dashboard-stats'),
         api.get('/payments/credits')
       ]);
+      console.log("User:", user);
 
       setStats({
         ...studentStats.data,
