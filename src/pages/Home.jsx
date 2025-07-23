@@ -2,10 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Shield, CheckCircle, Users, FileText, Search, ArrowRight, Globe, Lock, Database, Award, BookOpen, GraduationCap } from 'lucide-react';
 
-// All images are now served from the Express static '/uploads' route
-
-const UPLOADS_BASE = '/uploads';
-
 const Home = () => {
   const features = [
     {
@@ -45,14 +41,15 @@ const Home = () => {
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-green-900 via-green-800 to-white-900 text-white min-h-[320px] flex items-center overflow-hidden py-6">
-        {/* Background Image with Subtle Overlay */}
+        {/* Background Pattern */}
         <div className="absolute inset-0 z-0">
-          <img
-            src={`${UPLOADS_BASE}/alevel.png`}
-            alt="A-Level Certificate"
-            className="object-cover w-full h-full opacity-20"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-green-900/90 via-green-900/70 to-white-900/40" />
+          <div className="absolute inset-0 bg-gradient-to-r from-green-900/90 via-green-900/70 to-green-900/40" />
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-0 left-0 w-full h-full bg-repeat" style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+              backgroundSize: '60px 60px'
+            }} />
+          </div>
         </div>
 
         {/* Decorative Elements */}
@@ -69,12 +66,7 @@ const Home = () => {
             <div className="lg:w-1/2 lg:pr-8 mb-8 lg:mb-0 text-center lg:text-left">
               {/* Logo/Icon */}
               <div className="inline-flex items-center justify-center p-2 bg-white  rounded-2xl mb-4 border border-white/10">
-                <img
-                  src={`${UPLOADS_BASE}/logo.png`}
-                  alt="Platform Logo"
-                  className="h-10 w-10 object-contain mr-2"
-                  style={{ minWidth: '3rem' }}
-                />
+                <Shield className="h-10 w-10 text-blue-600 mr-2" />
               </div>
 
               {/* Headline */}
@@ -121,9 +113,15 @@ const Home = () => {
                   Trusted by Nigeria's Leading Institutions
                 </div>
                 <div className="flex justify-center lg:justify-start items-center gap-4 flex-wrap p-2">
-                  <img src={`${UPLOADS_BASE}/jamb.png`} alt="JAMB" className="h-7 md:h-8 object-contain bg-white rounded-lg opacity-90 hover:opacity-100 transition-opacity" />
-                  <img src={`${UPLOADS_BASE}/waec.png`} alt="WAEC" className="h-7 md:h-8 object-contain bg-white rounded-lg opacity-90 hover:opacity-100 transition-opacity" />
-                  <img src={`${UPLOADS_BASE}/min.png`} alt="Ministry of Education" className="h-7 md:h-8 bg-white rounded-lg object-contain opacity-90 hover:opacity-100 transition-opacity" />
+                  <div className="h-7 md:h-8 bg-white rounded-lg px-3 py-1 opacity-90 hover:opacity-100 transition-opacity flex items-center">
+                    <span className="text-blue-900 font-bold text-xs">JAMB</span>
+                  </div>
+                  <div className="h-7 md:h-8 bg-white rounded-lg px-3 py-1 opacity-90 hover:opacity-100 transition-opacity flex items-center">
+                    <span className="text-green-900 font-bold text-xs">WAEC</span>
+                  </div>
+                  <div className="h-7 md:h-8 bg-white rounded-lg px-3 py-1 opacity-90 hover:opacity-100 transition-opacity flex items-center">
+                    <span className="text-purple-900 font-bold text-xs">FME</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -133,11 +131,19 @@ const Home = () => {
               <div className="relative max-w-xs mx-auto">
                 {/* Certificate Image with Elegant Frame */}
                 <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl transform rotate-1 hover:rotate-0 transition-transform duration-500">
-                  <img
-                    src={`${UPLOADS_BASE}/alevel.png`}
-                    alt="Sample A-Level Certificate"
-                    className="w-full h-auto object-cover"
-                  />
+                  <div className="w-full h-64 bg-gradient-to-br from-green-100 to-blue-100 flex items-center justify-center">
+                    <div className="text-center p-8">
+                      <Award className="h-16 w-16 text-green-600 mx-auto mb-4" />
+                      <h3 className="text-lg font-bold text-gray-800 mb-2">A-Level Certificate</h3>
+                      <p className="text-sm text-gray-600">Sample Certificate</p>
+                      <div className="mt-4 space-y-1 text-xs text-gray-500">
+                        <div>Student Name: John Doe</div>
+                        <div>Certificate: IJMB</div>
+                        <div>Year: 2023</div>
+                        <div>Grade: Distinction</div>
+                      </div>
+                    </div>
+                  </div>
                   {/* Glossy Overlay Effect */}
                   <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/0 pointer-events-none" />
                 </div>

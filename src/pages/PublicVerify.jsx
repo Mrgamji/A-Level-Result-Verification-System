@@ -120,7 +120,9 @@ const PublicVerify = () => {
           {/* Navigation Bar */}
           <nav className="flex justify-between items-center mb-10">
             <div className="flex items-center gap-2">
-              <img src="/uploads/logo.png" alt="Logo" className="h-10 w-10 rounded-xl bg-white/80 p-1" />
+              <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center">
+                <Shield className="h-6 w-6 text-white" />
+              </div>
               <span className="font-bold text-lg text-white">A-Level Verification</span>
             </div>
             <div className="flex gap-3">
