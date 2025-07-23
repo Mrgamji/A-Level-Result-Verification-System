@@ -3,10 +3,14 @@ require('dotenv').config();
 const cors = require('cors');
 const helmet = require('helmet');
 const { sequelize } = require('./models');
-
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 10000;
+
+
+// Serve the /uploads folder
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Middleware
 app.use(helmet());

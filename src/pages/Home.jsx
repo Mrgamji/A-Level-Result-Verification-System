@@ -2,8 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Shield, CheckCircle, Users, FileText, Search, ArrowRight, Globe, Lock, Database, Award, BookOpen, GraduationCap } from 'lucide-react';
 
-// Partner logos (you would replace these with actual image imports)
+// All images are now served from the Express static '/uploads' route
 
+const UPLOADS_BASE = '/uploads';
 
 const Home = () => {
   const features = [
@@ -47,7 +48,7 @@ const Home = () => {
         {/* Background Image with Subtle Overlay */}
         <div className="absolute inset-0 z-0">
           <img
-            src="/uploads/alevel.png"
+            src={`${UPLOADS_BASE}/alevel.png`}
             alt="A-Level Certificate"
             className="object-cover w-full h-full opacity-20"
           />
@@ -69,7 +70,7 @@ const Home = () => {
               {/* Logo/Icon */}
               <div className="inline-flex items-center justify-center p-2 bg-white  rounded-2xl mb-4 border border-white/10">
                 <img
-                  src="/uploads/logo.png"
+                  src={`${UPLOADS_BASE}/logo.png`}
                   alt="Platform Logo"
                   className="h-10 w-10 object-contain mr-2"
                   style={{ minWidth: '3rem' }}
@@ -120,9 +121,9 @@ const Home = () => {
                   Trusted by Nigeria's Leading Institutions
                 </div>
                 <div className="flex justify-center lg:justify-start items-center gap-4 flex-wrap p-2">
-                  <img src="/uploads/jamb.png" alt="JAMB" className="h-7 md:h-8 object-contain bg-white rounded-lg opacity-90 hover:opacity-100 transition-opacity" />
-                  <img src="/uploads/waec.png" alt="WAEC" className="h-7 md:h-8 object-contain bg-white rounded-lg opacity-90 hover:opacity-100 transition-opacity" />
-                  <img src="/uploads/min.png" alt="Ministry of Education" className="h-7 md:h-8 bg-white rounded-lg object-contain opacity-90 hover:opacity-100 transition-opacity" />
+                  <img src={`${UPLOADS_BASE}/jamb.png`} alt="JAMB" className="h-7 md:h-8 object-contain bg-white rounded-lg opacity-90 hover:opacity-100 transition-opacity" />
+                  <img src={`${UPLOADS_BASE}/waec.png`} alt="WAEC" className="h-7 md:h-8 object-contain bg-white rounded-lg opacity-90 hover:opacity-100 transition-opacity" />
+                  <img src={`${UPLOADS_BASE}/min.png`} alt="Ministry of Education" className="h-7 md:h-8 bg-white rounded-lg object-contain opacity-90 hover:opacity-100 transition-opacity" />
                 </div>
               </div>
             </div>
@@ -133,7 +134,7 @@ const Home = () => {
                 {/* Certificate Image with Elegant Frame */}
                 <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl transform rotate-1 hover:rotate-0 transition-transform duration-500">
                   <img
-                    src="/uploads/alevel.png"
+                    src={`${UPLOADS_BASE}/alevel.png`}
                     alt="Sample A-Level Certificate"
                     className="w-full h-auto object-cover"
                   />
