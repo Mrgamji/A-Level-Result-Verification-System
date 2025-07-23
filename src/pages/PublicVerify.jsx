@@ -451,7 +451,7 @@ const PublicVerify = () => {
                       <div className="flex items-center">
                         <AlertTriangle className="h-5 w-5 text-yellow-600 mr-2" />
                         <span className="text-yellow-800 text-sm">
-                          Your verification token has been used and is no longer valid.
+                          A Certificate is not found with the details you supplied, Kindly attempt verifying again.
                         </span>
                       </div>
                     </div>
@@ -470,7 +470,7 @@ const PublicVerify = () => {
                       }}
                       className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors mr-4"
                     >
-                      Verify Another Certificate
+                      Re-Verify Certificate
                     </button>
                     <button
                       onClick={() => setActiveTab('purchase')}

@@ -54,6 +54,14 @@ const Institution = sequelize.define('Institution', {
     allowNull: true,
     unique: true,
   },
+  deskOfficerName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  deskOfficerPosition: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   userId: {
     type: DataTypes.INTEGER,
     allowNull: true,

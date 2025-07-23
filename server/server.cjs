@@ -4,6 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const { sequelize } = require('./models');
 
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -21,6 +22,14 @@ app.use('/api/verification', require('./routes/verification'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/announcements', require('./routes/announcements'));
 app.use('/api/public', require('./routes/public'));
+
+sequelize.sync({ force: true }) // ⬅️ This drops and recreates all tables
+  .then(() => {
+    console.log("Database synced with force: true");
+  })
+  .catch((err) => {
+    console.error("Failed to sync database:", err);
+  });
 
 // Health check
 app.get('/api/health', (req, res) => {

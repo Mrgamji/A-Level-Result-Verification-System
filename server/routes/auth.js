@@ -1,4 +1,7 @@
+
 const express = require('express');
+const router = express.Router();
+const { Sequelize, Op } = require('sequelize');
 const bcrypt = require('bcryptjs');
 const sendMail = require('../utility/mailer');
 const jwt = require('jsonwebtoken');
@@ -6,16 +9,16 @@ const { body, validationResult } = require('express-validator');
 const { User, Institution } = require('../models');
 const { JWT_SECRET, authenticateToken, requireRole } = require('../middleware/auth');
 
-const router = express.Router();
-
 // Activate institution request
 router.post('/activate-institution', [
   body('institutionName').trim().notEmpty().withMessage('Institution name is required'),
   body('schoolEmail').isEmail().withMessage('Valid school email is required'),
   body('accreditationId').trim().notEmpty().withMessage('Accreditation ID is required'),
   body('address').trim().notEmpty().withMessage('Address is required'),
-  body('institutionType').isIn(['private', 'public']).withMessage('Valid institution type is required'),
+  body('institutionType').trim().notEmpty().withMessage('Institution type is required'),
   body('deskOfficerPhone').trim().notEmpty().withMessage('Desk officer phone is required'),
+  body('deskOfficerName').trim().notEmpty().withMessage('Desk officer name is required'),
+  body('deskOfficerPosition').trim().notEmpty().withMessage('Desk officer position is required'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -29,62 +32,45 @@ router.post('/activate-institution', [
       accreditationId, 
       address, 
       institutionType,
-      subType,
       deskOfficerPhone,
+      deskOfficerName,
+      deskOfficerPosition
     } = req.body;
 
-    // Defensive: check Institution and sequelize are defined
-    if (!Institution) {
-      return res.status(500).json({ error: 'Institution model not available' });
-    }
-    let sequelize;
-    try {
-      sequelize = require('sequelize');
-    } catch (e) {
-      return res.status(500).json({ error: 'Sequelize not available' });
-    }
-
-    // Check if institution already exists
-    let existingInstitution;
-    try {
-      existingInstitution = await Institution.findOne({ 
-        where: { 
-          [sequelize.Op.or]: [
-            { email: schoolEmail },
-            { accreditationId: accreditationId }
-          ]
-        } 
-      });
-    } catch (err) {
-      console.error('DB error on findOne:', err);
-      return res.status(500).json({ error: 'Database error while checking for existing institution' });
-    }
+    // Check for existing institution using Op.or
+    const existingInstitution = await Institution.findOne({
+      where: {
+        [Op.or]: [
+          { email: schoolEmail },
+          { accreditationId: accreditationId }
+        ]
+      }
+    });
 
     if (existingInstitution) {
-      return res.status(400).json({ error: 'Institution already exists with this email or accreditation ID' });
-    }
-
-    // Create institution activation request
-    let institution;
-    try {
-      institution = await Institution.create({
-        name: institutionName,
-        email: schoolEmail,
-        accreditationId,
-        address,
-        institutionType,
-        deskOfficerPhone,
-        status: 'pending',
+      return res.status(400).json({ 
+        error: 'Institution already exists with this email or accreditation ID',
+        conflicts: {
+          email: existingInstitution.email === schoolEmail,
+          accreditationId: existingInstitution.accreditationId === accreditationId
+        }
       });
-    } catch (err) {
-      console.error('DB error on create:', err);
-      return res.status(500).json({ error: 'Database error while creating institution' });
     }
 
-    if (!institution) {
-      return res.status(500).json({ error: 'Failed to create institution activation request' });
-    }
+    // Create new institution entry
+    const institution = await Institution.create({
+      name: institutionName,
+      email: schoolEmail,
+      accreditationId,
+      address,
+      institutionType,
+      deskOfficerPhone,
+      deskOfficerName,
+      deskOfficerPosition,
+      status: 'pending',
+    });
 
+    // Send confirmation email
     await sendMail({
       to: institution.email,
       subject: '🎉 Your Institution Activation Request Has Been Received!',
@@ -102,7 +88,10 @@ router.post('/activate-institution', [
               </p>
               <p style="font-size: 1rem; color: #444; margin-bottom: 18px;">
                 <span style="color: #2563eb; font-weight: 600;">What's next?</span><br>
-                Our team will review your request and verify your details. Once your institution is approved, you will receive an email with your login credentials and further instructions.
+                Our team will review your request and verify your details. Once approved, you will receive an email with your login credentials and further instructions.
+              </p>
+              <p style="font-size: 1rem; color: #444; margin-bottom: 18px;">
+                <strong>Contact Person:</strong> ${deskOfficerName} (${deskOfficerPosition})
               </p>
               <div style="background: #f1f5f9; border-radius: 8px; padding: 18px; margin: 24px 0;">
                 <p style="margin: 0; color: #2563eb; font-size: 1rem;">
@@ -121,19 +110,22 @@ router.post('/activate-institution', [
             </div>
           </div>
         </div>
-      `,
+      `
     });
+
     res.status(201).json({
       message: 'Institution activation request submitted successfully. You will receive login credentials via email once approved.',
       institutionId: institution.id,
     });
+
   } catch (error) {
     console.error('Activation request error:', error);
-    res.status(500).json({ error: error.message || 'Server error' });
+    res.status(500).json({ 
+      error: error.message || 'Server error',
+      reference: `ERR-${Date.now()}`
+    });
   }
 });
-
-
 
 //Login
 router.post('/login', [
