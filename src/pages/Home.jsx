@@ -104,7 +104,7 @@ const Home = () => {
                   <span className="absolute inset-0 bg-gradient-to-r from-white-100 to-green-200 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </Link>
                 <Link
-                  to="/verify"
+                  to="/public-verify"
                   className="relative overflow-hidden group border-2 border-blue-300 text-white px-6 py-2 rounded-xl font-semibold text-base hover:bg-white/10 transition-all duration-300 shadow-lg hover:shadow-blue-500/10"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
@@ -342,7 +342,7 @@ const Home = () => {
               <span className="absolute inset-0 bg-gradient-to-r from-blue-100 to-blue-200 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
             </Link>
             <Link
-              to="/contact"
+              to="/public-verify"
               className="relative overflow-hidden group border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-600 transition-all duration-300"
             >
               <span className="relative z-10">Contact Our Team</span>

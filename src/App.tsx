@@ -21,6 +21,7 @@ import InstitutionSettings from './pages/institution/Settings';
 import Announcements from './pages/admin/Announcements';
 import Feedback from './pages/admin/Feedback';
 import InstitutionFeedback from './pages/institution/Feedback';
+import PublicVerify from './pages/PublicVerify';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="/verify" element={<Layout><Verify /></Layout>} />
           <Route path="/institution/activate" element={<Layout><InstitutionActivation /></Layout>} />
           <Route path="/login" element={<Layout><Login /></Layout>} />
+          <Route path="/public-verify" element={<Layout><PublicVerify /></Layout>} />
           
           {/* Admin Routes */}
           <Route
