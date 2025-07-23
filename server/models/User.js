@@ -24,6 +24,11 @@ const User = sequelize.define('User', {
     allowNull: false,
     defaultValue: 'institution',
   },
+  isPasswordChanged: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
 });
 
 module.exports = User;
