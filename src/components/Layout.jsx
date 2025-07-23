@@ -54,9 +54,14 @@ const Layout = ({ children }) => {
                 to="/"
                 className="flex items-center space-x-2"
               >
-                <Shield className="h-8 w-8 text-blue-600" />
+                <img
+                  src="/uploads/logo.png"
+                  alt="Logo"
+                  className="h-8 w-8 object-contain"
+                  style={{ marginRight: '0.5rem' }}
+                />
                 <span className="text-xl font-bold text-gray-900">
-                  A-Level Certificate Verification System
+                  Nigeria A-Level Certificate Verification System
                 </span>
               </Link>
             </div>
