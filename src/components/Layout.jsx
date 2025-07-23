@@ -39,8 +39,8 @@ const Layout = ({ children }) => {
     // If not logged in, show Home and then others
     navigation = [
       { name: 'Home', href: '/', icon: Search },
-      { name: 'Public Verify', href: '/public-verify', icon: Search },
-      { name: 'Verify Certificate', href: '/verify', icon: Search },
+      { name: 'Verify', href: '/public-verify', icon: Search },
+      { name: 'Verify as institution', href: '/verify', icon: Search },
     ];
   }
 

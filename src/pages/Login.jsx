@@ -57,13 +57,21 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+    <div className="relative min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-green-50 via-emerald-100 to-green-200 overflow-hidden">
+      {/* Green blurred background gradients */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-br from-green-300 via-emerald-200 to-green-100 rounded-full blur-3xl opacity-60"></div>
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-gradient-to-tr from-emerald-200 via-green-100 to-green-50 rounded-full blur-2xl opacity-50"></div>
+      </div>
+      <div className="w-full max-w-md relative z-10">
+        <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-2xl overflow-hidden">
           {/* Header */}
-          <div className={`p-6 text-center ${isAdmin ? 'bg-indigo-600' : 'bg-blue-600'}`}>
+          <div className={`p-6 text-center ${isAdmin 
+            ? 'bg-gradient-to-r from-emerald-600 via-green-600 to-green-400' 
+            : 'bg-gradient-to-r from-green-600 via-emerald-500 to-green-400'
+          }`}>
             <div className="flex justify-center mb-3">
-              <div className="bg-white/20 p-3 rounded-full">
+              <div className="bg-white/30 p-3 rounded-full backdrop-blur-sm">
                 {isAdmin ? (
                   <User className="h-6 w-6 text-white" />
                 ) : (
@@ -74,7 +82,7 @@ const Login = () => {
             <h2 className="text-2xl font-bold text-white">
               {isAdmin ? 'Admin Portal' : 'Institution Portal'}
             </h2>
-            <p className="text-blue-100 mt-1">
+            <p className="text-green-100 mt-1">
               {isAdmin ? 'Sign in with admin credentials' : 'Sign in with your institution access code'}
             </p>
           </div>
@@ -107,7 +115,7 @@ const Login = () => {
                     placeholder={isAdmin ? 'admin@example.com' : 'INST-XXXXXX-XXXX'}
                     value={isAdmin ? credentials.email : credentials.accessCode}
                     onChange={handleInputChange}
-                    className="block w-full pl-3 pr-10 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="block w-full pl-3 pr-10 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm bg-white/90"
                     required
                     autoComplete={isAdmin ? 'email' : 'organization'}
                   />
@@ -126,7 +134,7 @@ const Login = () => {
                     placeholder="••••••••"
                     value={credentials.password}
                     onChange={handleInputChange}
-                    className="block w-full pl-3 pr-10 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="block w-full pl-3 pr-10 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm bg-white/90"
                     required
                     autoComplete="current-password"
                   />
@@ -137,10 +145,10 @@ const Login = () => {
                 type="submit"
                 disabled={isLoading}
                 className={`w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                  isAdmin ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-blue-600 hover:bg-blue-700'
-                } focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                  isAdmin ? 'focus:ring-indigo-500' : 'focus:ring-blue-500'
-                } disabled:opacity-70 disabled:cursor-not-allowed transition-colors`}
+                  isAdmin 
+                    ? 'bg-gradient-to-r from-emerald-600 via-green-600 to-green-500 hover:from-emerald-700 hover:to-green-600'
+                    : 'bg-gradient-to-r from-green-600 via-emerald-500 to-green-400 hover:from-green-700 hover:to-emerald-600'
+                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-70 disabled:cursor-not-allowed transition-colors`}
               >
                 {isLoading ? (
                   <>
@@ -165,7 +173,7 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={toggleUserType}
-                  className="font-medium text-blue-600 hover:text-blue-500 focus:outline-none"
+                  className="font-medium text-green-700 hover:text-green-600 focus:outline-none transition-colors"
                 >
                   {isAdmin ? 'Switch to institution login' : 'Switch to admin login'}
                 </button>
