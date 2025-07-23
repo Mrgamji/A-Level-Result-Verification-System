@@ -4,8 +4,6 @@ import { useAuth } from '/src/contexts/AuthContext';
 import {
   LogOut,
   Shield,
-  Users,
-  FileText,
   Search,
   LayoutDashboard,
 } from 'lucide-react';
@@ -25,10 +23,25 @@ const Layout = ({ children }) => {
   }
 
   // Navigation for public pages
-  const navigation = [
-    { name: 'Home', href: '/', icon: Search },
-    { name: 'Verify Certificate', href: '/verify', icon: Search },
-  ];
+  let navigation = [];
+  if (user) {
+    // If logged in, only show dashboard and then other links (no Home)
+    navigation = [
+      {
+        name: 'Dashboard',
+        href: user.role === 'admin' ? '/admin/dashboard' : '/institution/dashboard',
+        icon: LayoutDashboard,
+        dashboard: true,
+      },
+      { name: 'Verify Certificate', href: '/verify', icon: Search },
+    ];
+  } else {
+    // If not logged in, show Home and then others
+    navigation = [
+      { name: 'Home', href: '/', icon: Search },
+      { name: 'Verify Certificate', href: '/verify', icon: Search },
+    ];
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -48,38 +61,44 @@ const Layout = ({ children }) => {
             </div>
 
             <div className="flex items-center space-x-4">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive(item.href)
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  <item.icon className="h-4 w-4" />
-                  <span>{item.name}</span>
-                </Link>
-              ))}
+              {navigation
+                // If logged in, show dashboard first, then others (excluding Home)
+                .filter(item => !user || item.name !== 'Home')
+                .map((item, idx) => (
+                  <React.Fragment key={item.name}>
+                    {/* If logged in and this is dashboard, render as blue button, else as normal nav */}
+                    {user && item.dashboard ? (
+                      <Link
+                        to={item.href}
+                        className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors`}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.name}</span>
+                      </Link>
+                    ) : (
+                      <Link
+                        to={item.href}
+                        className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                          isActive(item.href)
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                        }`}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.name}</span>
+                      </Link>
+                    )}
+                  </React.Fragment>
+                ))}
 
               {user ? (
-                <div className="flex items-center space-x-2">
-                  <Link
-                    to={user.role === 'admin' ? '/admin/dashboard' : '/institution/dashboard'}
-                    className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                  >
-                    <LayoutDashboard className="h-4 w-4" />
-                    <span>Dashboard</span>
-                  </Link>
-                  <button
-                    onClick={logout}
-                    className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>Logout</span>
-                  </button>
-                </div>
+                <button
+                  onClick={logout}
+                  className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
+                </button>
               ) : (
                 <div className="flex items-center space-x-2">
                   <Link

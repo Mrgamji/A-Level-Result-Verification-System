@@ -1,5 +1,5 @@
 const express = require('express');
-const { fn, col } = require('sequelize');
+const { Sequelize, Op, fn, col, literal } = require('sequelize');
 const bcrypt = require('bcryptjs');
 const sendMail = require('../utility/mailer');
 const router = express.Router();
@@ -7,10 +7,97 @@ const jwt = require('jsonwebtoken');
 const { User, Institution, Student, VerificationLog } = require('../models');
 const { authenticateToken, requireRole, JWT_SECRET } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
-// Admin login endpoint
+const db = require('../config/database');
 
+// Get verifications by institution (SQLite compatible)
+router.get('/chart/verifications-by-institution', authenticateToken, requireRole('admin'), async (req, res) => {
+  try {
+    const results = await VerificationLog.findAll({
+      attributes: [
+        [fn('COUNT', col('id')), 'count'],
+        [col('Institution.name'), 'institution']
+      ],
+      include: [{
+        model: Institution,
+        attributes: [],
+        required: true
+      }],
+      group: ['Institution.name'],
+      order: [[fn('COUNT', col('id')), 'DESC']],
+      limit: 10,
+      raw: true
+    });
 
+    res.json(results);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch verification data' });
+  }
+});
 
+// Get verification success rate (SQLite compatible)
+router.get('/chart/success-rate', authenticateToken, requireRole('admin'), async (req, res) => {
+  try {
+    // First ensure the status column exists
+    const tableInfo = await db.query("PRAGMA table_info(VerificationLogs)");
+    const hasStatusColumn = tableInfo[0].some(col => col.name === 'status');
+    
+    if (!hasStatusColumn) {
+      return res.status(400).json({ 
+        error: 'Status column not found in VerificationLogs table',
+        solution: 'Run database migration to add status column'
+      });
+    }
+
+    const results = await VerificationLog.findAll({
+      attributes: [
+        'status',
+        [fn('COUNT', col('id')), 'value']
+      ],
+      group: ['status'],
+      raw: true
+    });
+
+    res.json(results);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch success rate data' });
+  }
+});
+
+// Get verifications over time (SQLite compatible)
+router.get('/chart/verifications-over-time', authenticateToken, requireRole('admin'), async (req, res) => {
+  try {
+    // SQLite doesn't support INTERVAL syntax, so we calculate the date in JS
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const results = await VerificationLog.findAll({
+      attributes: [
+        [fn('date', col('created_at')), 'date'],
+        [fn('COUNT', col('id')), 'count']
+      ],
+      where: {
+        created_at: {
+          [Op.gte]: thirtyDaysAgo
+        }
+      },
+      group: [fn('date', col('created_at'))],
+      order: [[fn('date', col('created_at')), 'ASC']],
+      raw: true
+    });
+
+    const formattedData = results.map(row => ({
+      date: new Date(row.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      count: row.count
+    }));
+
+    res.json(formattedData);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch timeline data' });
+  }
+});
 
 router.post('/login', [
   body('email')
@@ -99,78 +186,90 @@ router.post('/login', [
   }
 });
 
-
-// Admin dashboard stats
-router.get('/dashboard-stats', 
-  authenticateToken, 
-  requireRole('admin'), 
-  async (req, res) => {
-    try {
-      // Parallel database queries for better performance
-      const [
-        totalInstitutions,
-        totalPendingInstitutions,
-        totalApprovedInstitutions,
-        totalStudents,
-        totalVerifications
-      ] = await Promise.all([
-        Institution.count(),
-        Institution.count({ where: { status: 'pending' } }),
-        Institution.count({ where: { status: 'approved' } }),
-        Student.count(),
-        VerificationLog.count()
-      ]);
-
-      res.json({
-        success: true,
-        data: {
-          institutions: {
-            total: totalInstitutions,
-            pending: totalPendingInstitutions,
-            approved: totalApprovedInstitutions
-          },
-          students: totalStudents,
-          verifications: totalVerifications,
-          updatedAt: new Date().toISOString()
-        }
-      });
-
-    } catch (error) {
-      console.error('Dashboard stats error:', error);
-      res.status(500).json({ 
-        error: 'Failed to load dashboard data',
-        code: 'DASHBOARD_ERROR'
-      });
-    }
-  }
-);
-// Admin dashboard stats endpoint
 router.get('/dashboard-stats', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
-    // Stats
-    const totalInstitutions = await Institution.count();
-    const totalPendingInstitutions = await Institution.count({ where: { status: 'pending' } });
-    const totalApprovedInstitutions = await Institution.count({ where: { status: 'approved' } });
-    const totalStudents = await Student.count();
-    const totalVerifications = await VerificationLog.count();
-
-    // Sum revenue (null-safe)
-    const revenueResult = 0;
-    const totalRevenue = 0;
-
-    // Respond
-    res.json({
+    const [
       totalInstitutions,
       totalPendingInstitutions,
       totalApprovedInstitutions,
       totalStudents,
       totalVerifications,
-      totalRevenue,
+      totalRevenue
+    ] = await Promise.all([
+      Institution.count(),
+      Institution.count({ where: { status: 'pending' } }),
+      Institution.count({ where: { status: 'approved' } }),
+      Student.count(),
+      VerificationLog.count(),
+      VerificationLog.sum('amount', {
+        where: {
+          amount: { [Op.not]: null }
+        }
+      }) || 0 // Ensure default value
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        institutions: {
+          total: totalInstitutions || 0,
+          pending: totalPendingInstitutions || 0,
+          approved: totalApprovedInstitutions || 0,
+        },
+        students: totalStudents || 0,
+        verifications: totalVerifications || 0,
+        revenue: totalRevenue || 0,
+        updatedAt: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error('Dashboard stats error:', error);
+    res.status(500).json({
+      error: 'Failed to load dashboard data',
+      code: 'DASHBOARD_ERROR',
+    });
+  }
+});
+router.get('/admin/verification-trends', authenticateToken, requireRole('admin'), async (req, res) => {
+  try {
+    const range = req.query.range || '30days';
+    const now = new Date();
+    let startDate;
+
+    switch (range) {
+      case '7days':
+        startDate = new Date(now.setDate(now.getDate() - 7));
+        break;
+      case '90days':
+        startDate = new Date(now.setDate(now.getDate() - 90));
+        break;
+      case '12months':
+        startDate = new Date(now.setMonth(now.getMonth() - 12));
+        break;
+      default:
+        startDate = new Date(now.setDate(now.getDate() - 30));
+    }
+
+    const logs = await VerificationLog.findAll({
+      where: { timestamp: { [Op.gte]: startDate } },
+      attributes: [
+        [Sequelize.fn('DATE', Sequelize.col('timestamp')), 'date'],
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'verifications']
+      ],
+      group: ['date'],
+      order: [['date', 'ASC']]
     });
 
-  } catch (error) {
-    console.error('Error fetching dashboard stats:', error); // Full trace
-    res.status(500).json({ error: 'Server error' });
+    const trends = logs.map(log => ({
+      date: log.getDataValue('date'),
+      verifications: parseInt(log.getDataValue('verifications'), 10),
+      students: Math.floor(Math.random() * 200) + 50 // optional or replace with real data
+    }));
+
+    res.json(trends);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Trend data fetch failed' });
   }
 });
 
@@ -328,21 +427,22 @@ router.put('/institutions/:id/status', authenticateToken, requireRole('admin'), 
   }
 });
 
-// Get verification logs
 router.get('/logs', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const logs = await VerificationLog.findAll({
-      order: [['timestamp', 'DESC']],
-      limit: 100,
+      include: [{
+        model: Institution,
+        attributes: ['name'], // Only select institution name
+      }],
+      order: [['timestamp', 'DESC']]
     });
-
+    console.log(logs);
     res.json(logs);
   } catch (error) {
     console.error('Error fetching logs:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
-
 // Change password for admin
 router.put('/change-password', authenticateToken, requireRole('admin'), [
   body('currentPassword').notEmpty().withMessage('Current password is required'),

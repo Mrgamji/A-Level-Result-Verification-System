@@ -3,7 +3,7 @@ const multer = require('multer');
 const csv = require('csv-parser');
 const fs = require('fs');
 const { body, validationResult } = require('express-validator');
-const { Student, Institution } = require('../models');
+const { Student, Institution, VerificationLog } = require('../models');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
@@ -204,42 +204,30 @@ router.delete('/:id', authenticateToken, requireRole('institution'), async (req,
 });
 
 
-// Get dashboard stats for institution (GET /api/students/dashboard-stats)
 router.get('/dashboard-stats', authenticateToken, requireRole('institution'), async (req, res) => {
   try {
     const institution = await Institution.findOne({ where: { userId: req.user.id } });
-    if (!institution) {
-      return res.status(404).json({ error: 'Institution not found' });
-    }
+    if (!institution) return res.status(404).json({ error: 'Institution not found' });
 
-    // Total students
-    const totalStudents = await Student.count({
+    const totalStudents = await Student.count({ where: { institutionId: institution.id } });
+
+    const totalVerifications = await VerificationLog.count({ where: { institutionId: institution.id } });
+
+    const totalSpent = await VerificationLog.sum('amount', {
       where: { institutionId: institution.id },
     });
-
-    // Total verifications, approved, pending
-    // Assuming Verification model exists and has status field
-    let totalVerifications = 0;
-    let totalSpent=0;
-
-    if (typeof Verification !== 'undefined') {
-      totalVerifications = await Verification.count({
-        where: { institutionId: institution.id },
-      });
-
-  
-    }
 
     res.json({
       totalStudents,
       totalVerifications,
-      totalSpent,
+      totalSpent, // or totalRevenue
     });
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
+
 
 
 // Get institution's students

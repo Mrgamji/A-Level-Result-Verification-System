@@ -8,36 +8,49 @@ const Payment = require('./Payment');
 const Announcement = require('./Announcement');
 const Feedback = require('./Feedback');
 
-// Define associations
+// ========== Associations ========== //
+
+// USER -> INSTITUTION
 User.hasOne(Institution, { foreignKey: 'userId' });
 Institution.belongsTo(User, { foreignKey: 'userId' });
 
+// INSTITUTION -> STUDENTS
 Institution.hasMany(Student, { foreignKey: 'institutionId' });
 Student.belongsTo(Institution, { foreignKey: 'institutionId' });
 
+// INSTITUTION -> CREDITS
 Institution.hasMany(Credit, { foreignKey: 'institutionId' });
 Credit.belongsTo(Institution, { foreignKey: 'institutionId' });
 
+// INSTITUTION -> PAYMENTS
 Institution.hasMany(Payment, { foreignKey: 'institutionId' });
 Payment.belongsTo(Institution, { foreignKey: 'institutionId' });
 
+// INSTITUTION -> VERIFICATION LOGS
 Institution.hasMany(VerificationLog, { foreignKey: 'institutionId' });
 VerificationLog.belongsTo(Institution, { foreignKey: 'institutionId' });
 
+// USER -> ANNOUNCEMENTS (Created by)
 User.hasMany(Announcement, { foreignKey: 'createdBy' });
 Announcement.belongsTo(User, { foreignKey: 'createdBy' });
 
+// INSTITUTION -> ANNOUNCEMENTS (Target)
 Institution.hasOne(Announcement, { foreignKey: 'targetInstitutionId' });
 Announcement.belongsTo(Institution, { foreignKey: 'targetInstitutionId' });
 
+// INSTITUTION -> FEEDBACK
 Institution.hasMany(Feedback, { foreignKey: 'institutionId' });
 Feedback.belongsTo(Institution, { foreignKey: 'institutionId' });
 
+// ANNOUNCEMENT -> FEEDBACK
 Announcement.hasMany(Feedback, { foreignKey: 'announcementId' });
 Feedback.belongsTo(Announcement, { foreignKey: 'announcementId' });
 
+// USER -> FEEDBACK (Responded By)
 User.hasMany(Feedback, { foreignKey: 'respondedBy' });
 Feedback.belongsTo(User, { foreignKey: 'respondedBy', as: 'Responder' });
+
+// Export models and sequelize
 module.exports = {
   sequelize,
   User,

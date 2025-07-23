@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from "react";
 import api from '../../utils/api';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, RefreshCw } from 'lucide-react';
 
-const PAGE_SIZE = 10;
+const DEFAULT_PAGE_SIZE = 10;
+const MAX_VISIBLE_PAGES = 5;
+const MAX_PAGES = 1000;
 
 function Students() {
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [filters, setFilters] = useState({
     institution: "",
     date: "",
@@ -18,23 +22,23 @@ function Students() {
   const [success, setSuccess] = useState("");
 
   // Fetch from API
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        setLoading(true);
-        const res = await api.get("/admin/students");
-        setStudents(res.data);
-        setSuccess("Students loaded successfully");
-        setTimeout(() => setSuccess(""), 3000);
-      } catch (err) {
-        console.error("Error fetching students:", err);
-        setError(err.response?.data?.message || "Failed to load students");
-        setTimeout(() => setError(""), 5000);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchStudents = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get("/admin/students");
+      setStudents(res.data);
+      setSuccess("Students loaded successfully");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err) {
+      console.error("Error fetching students:", err);
+      setError(err.response?.data?.message || "Failed to load students");
+      setTimeout(() => setError(""), 5000);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchStudents();
   }, []);
 
@@ -44,7 +48,7 @@ function Students() {
 
     if (filters.institution) {
       filtered = filtered.filter(s =>
-        s.institution.toLowerCase().includes(filters.institution.toLowerCase())
+        s.institution?.toLowerCase().includes(filters.institution.toLowerCase())
       );
     }
 
@@ -53,7 +57,7 @@ function Students() {
     }
 
     if (filters.graduationYear) {
-      filtered = filtered.filter(s => s.yearOfGraduation.toString() === filters.graduationYear);
+      filtered = filtered.filter(s => s.yearOfGraduation?.toString() === filters.graduationYear);
     }
 
     if (filters.search) {
@@ -70,16 +74,24 @@ function Students() {
     setCurrentPage(1);
   }, [students, filters]);
 
-  const totalPages = Math.ceil(filteredStudents.length / PAGE_SIZE);
-  const paginatedStudents = filteredStudents.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
-  );
+  // Calculate pagination
+  const realTotalPages = Math.ceil(filteredStudents.length / pageSize);
+  const totalPages = Math.min(realTotalPages, MAX_PAGES);
+  
+  // Get paginated data
+  const paginatedStudents = filteredStudents
+    .slice(0, MAX_PAGES * pageSize)
+    .slice(
+      (currentPage - 1) * pageSize,
+      currentPage * pageSize
+    );
 
-  const institutionOptions = [...new Set(students.map(s => s.institution))].sort();
-  const dateOptions = [...new Set(students.map(s => s.uploadDate))].sort();
-  const graduationYearOptions = [...new Set(students.map(s => s.yearOfGraduation))].sort((a, b) => b - a);
+  // Get unique filter options
+  const institutionOptions = [...new Set(students.map(s => s.institution))].filter(Boolean).sort();
+  const dateOptions = [...new Set(students.map(s => s.uploadDate))].filter(Boolean).sort();
+  const graduationYearOptions = [...new Set(students.map(s => s.yearOfGraduation))].filter(Boolean).sort((a, b) => b - a);
 
+  // Handle filter changes
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({
@@ -88,6 +100,7 @@ function Students() {
     }));
   };
 
+  // Reset all filters
   const resetFilters = () => {
     setFilters({
       institution: "",
@@ -97,53 +110,77 @@ function Students() {
     });
   };
 
+  // Pagination controls
+  const getVisiblePages = () => {
+    const totalVisiblePages = Math.min(totalPages, MAX_VISIBLE_PAGES);
+    let startPage = Math.max(1, currentPage - Math.floor(totalVisiblePages / 2));
+    startPage = Math.min(startPage, totalPages - totalVisiblePages + 1);
+    
+    return Array.from({ length: totalVisiblePages }, (_, i) => startPage + i);
+  };
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Students Management</h2>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">Students Management</h2>
+          <button
+            onClick={fetchStudents}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors mt-4 md:mt-0"
+          >
+            <RefreshCw size={18} />
+            Refresh Data
+          </button>
+        </div>
 
         {/* Status Messages */}
         {loading && (
-          <div className="mb-4 p-3 bg-blue-100 text-blue-800 rounded flex items-center">
-            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
+          <div className="mb-4 p-3 bg-blue-50 text-blue-800 rounded flex items-center gap-2">
+            <RefreshCw className="animate-spin" size={18} />
             Loading students...
           </div>
         )}
 
         {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-800 rounded flex items-center">
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
+          <div className="mb-4 p-3 bg-red-50 text-red-800 rounded flex items-center gap-2">
+            <span className="text-red-500">✕</span>
             {error}
           </div>
         )}
 
         {success && (
-          <div className="mb-4 p-3 bg-green-100 text-green-800 rounded flex items-center">
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-            </svg>
+          <div className="mb-4 p-3 bg-green-50 text-green-800 rounded flex items-center gap-2">
+            <span className="text-green-500">✓</span>
             {success}
           </div>
         )}
 
         {/* Filters Section */}
-        <div className="mb-6 bg-gray-50 p-4 rounded-lg">
+        <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">FILTER STUDENTS</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
-              <input
-                type="text"
-                name="search"
-                placeholder="Name, email or institution"
-                value={filters.search}
-                onChange={handleFilterChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  name="search"
+                  placeholder="Name, email or institution"
+                  value={filters.search}
+                  onChange={handleFilterChange}
+                  className="pl-10 w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
             </div>
 
             <div>
@@ -200,27 +237,27 @@ function Students() {
             <div className="flex items-end">
               <button
                 onClick={resetFilters}
-                className="w-full py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-md transition duration-150"
+                className="w-full py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-md transition duration-150 flex items-center justify-center gap-2"
               >
-                Reset Filters
+                <span>Reset</span>
               </button>
             </div>
           </div>
 
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-600">
+          <div className="flex justify-between items-center text-sm">
+            <div className="text-gray-600">
               Showing {filteredStudents.length} of {students.length} students
             </div>
             {filteredStudents.length !== students.length && (
-              <div className="text-sm text-blue-600">
-                {students.length - filteredStudents.length} students filtered out
+              <div className="text-blue-600">
+                {students.length - filteredStudents.length} filtered out
               </div>
             )}
           </div>
         </div>
 
         {/* Students Table */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -228,44 +265,53 @@ function Students() {
                   #
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
+                  Student
                 </th>
-               
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Graduation Year
+                  Graduation
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Institution
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Upload Date
+                  Uploaded
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {paginatedStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                  <td colSpan={5} className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
                     {students.length === 0 ? 'No students available' : 'No students match your filters'}
                   </td>
                 </tr>
               ) : (
                 paginatedStudents.map((student, idx) => (
-                  <tr key={student.id} className="hover:bg-gray-50">
+                  <tr key={student.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {(currentPage - 1) * PAGE_SIZE + idx + 1}
+                      {(currentPage - 1) * pageSize + idx + 1}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{student.fullName}</div>
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-medium">
+                          {student.fullName?.charAt(0) || '?'}
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{student.fullName || 'Unknown'}</div>
+                          <div className="text-xs text-gray-500">{student.email || 'No email'}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                        {student.yearOfGraduation || 'N/A'}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {student.yearOfGraduation}
+                      {student.institution || 'Unknown'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {student.institution}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(student.uploadDate).toLocaleDateString()}
+                      {student.uploadDate ? new Date(student.uploadDate).toLocaleDateString() : 'N/A'}
                     </td>
                   </tr>
                 ))
@@ -274,35 +320,83 @@ function Students() {
           </table>
         </div>
 
-        {/* Pagination */}
+        {/* Enhanced Pagination */}
         {totalPages > 1 && (
-          <div className="mt-6 flex items-center justify-between">
-            <div className="text-sm text-gray-700">
-              Showing page {currentPage} of {totalPages}
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className={`px-4 py-2 border rounded-md ${currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-700">Rows per page:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="text-sm border rounded-md px-2 py-1 focus:ring-blue-500 focus:border-blue-500"
               >
-                Previous
+                {[5, 10, 20, 50, 100].map(size => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="text-sm text-gray-700">
+              Showing {(currentPage - 1) * pageSize + 1} to{' '}
+              {Math.min(currentPage * pageSize, filteredStudents.length)} of{' '}
+              {filteredStudents.length} entries
+              {realTotalPages > MAX_PAGES && (
+                <span className="ml-2 text-xs text-gray-500">(first {MAX_PAGES * pageSize} shown)</span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+                className="p-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                aria-label="First page"
+              >
+                <ChevronsLeft className="h-4 w-4" />
               </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="p-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                aria-label="Previous page"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+
+              {getVisiblePages().map(page => (
                 <button
                   key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`px-4 py-2 border rounded-md ${currentPage === page ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                  onClick={() => handlePageChange(page)}
+                  className={`w-10 h-10 rounded-md border flex items-center justify-center ${
+                    currentPage === page 
+                      ? 'bg-blue-500 text-white border-blue-500' 
+                      : 'hover:bg-gray-100'
+                  }`}
                 >
                   {page}
                 </button>
               ))}
+
               <button
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className={`px-4 py-2 border rounded-md ${currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                className="p-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                aria-label="Next page"
               >
-                Next
+                <ChevronRight className="h-4 w-4" />
+              </button>
+              
+              <button
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                aria-label="Last page"
+              >
+                <ChevronsRight className="h-4 w-4" />
               </button>
             </div>
           </div>

@@ -61,11 +61,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    const currentUser = user;
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     delete api.defaults.headers.common['Authorization'];
-    window.location.href = '/';
+    if (currentUser && currentUser.role === 'admin') {
+      window.location.href = '/admin/login';
+    } else {
+      window.location.href = '/login';
+    }
   };
 
   return (
