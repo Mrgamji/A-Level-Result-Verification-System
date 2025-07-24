@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, CreditCard, CheckCircle, XCircle, AlertTriangle, Shield, Users, FileText } from 'lucide-react';
 import api from '../utils/api';
 
@@ -49,6 +50,8 @@ const PublicVerify = () => {
     { value: 'verification', label: 'General Verification' },
     { value: 'other', label: 'Other Purpose' }
   ];
+
+  const navigate = useNavigate();
 
   const handlePurchaseSubmit = async (e) => {
     e.preventDefault();
@@ -112,6 +115,11 @@ const PublicVerify = () => {
     setSuccess('');
   };
 
+  // Navigation handlers using react-router-dom's useNavigate
+  const handleNav = (path) => {
+    navigate(path);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -124,30 +132,34 @@ const PublicVerify = () => {
               <span className="font-bold text-lg text-white">A-Level Verification</span>
             </div>
             <div className="flex gap-3">
-              <a
-                href="/"
+              <button
+                type="button"
+                onClick={() => handleNav('/')}
                 className="px-4 py-2 rounded-lg font-medium bg-white/10 hover:bg-white/20 text-white transition"
               >
                 Home
-              </a>
-              <a
-                href="/verify"
+              </button>
+              <button
+                type="button"
+                onClick={() => handleNav('/verify')}
                 className="px-4 py-2 rounded-lg font-medium bg-white/10 hover:bg-white/20 text-white transition"
               >
                 Verify
-              </a>
-              <a
-                href="/login"
+              </button>
+              <button
+                type="button"
+                onClick={() => handleNav('/login')}
                 className="px-4 py-2 rounded-lg font-medium bg-white/10 hover:bg-white/20 text-white transition"
               >
                 Login
-              </a>
-              <a
-                href="/institution/activate"
+              </button>
+              <button
+                type="button"
+                onClick={() => handleNav('/institution/activate')}
                 className="px-4 py-2 rounded-lg font-medium bg-white/10 hover:bg-white/20 text-white transition"
               >
                 Activate Institution
-              </a>
+              </button>
             </div>
           </nav>
           <div className="text-center">
