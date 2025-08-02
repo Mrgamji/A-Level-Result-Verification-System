@@ -121,72 +121,33 @@ const PublicVerify = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 -mt-6">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-green-700 to-green-900 text-white py-16">
-        <div className="max-w-4xl mx-auto px-4">
-          {/* Navigation Bar */}
-          <nav className="flex justify-between items-center mb-10">
-            <div className="flex items-center gap-2">
-              <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center">
-                <Shield className="h-6 w-6 text-white" />
-              </div>
-              <span className="font-bold text-lg text-white">A-Level Verification</span>
-            </div>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => handleNav('/')}
-                className="px-4 py-2 rounded-lg font-medium bg-white/10 hover:bg-white/20 text-white transition"
-              >
-                Home
-              </button>
-              <button
-                type="button"
-                onClick={() => handleNav('/verify')}
-                className="px-4 py-2 rounded-lg font-medium bg-white/10 hover:bg-white/20 text-white transition"
-              >
-                Verify
-              </button>
-              <button
-                type="button"
-                onClick={() => handleNav('/login')}
-                className="px-4 py-2 rounded-lg font-medium bg-white/10 hover:bg-white/20 text-white transition"
-              >
-                Login
-              </button>
-              <button
-                type="button"
-                onClick={() => handleNav('/institution/activate')}
-                className="px-4 py-2 rounded-lg font-medium bg-white/10 hover:bg-white/20 text-white transition"
-              >
-                Activate Institution
-              </button>
-            </div>
-          </nav>
+      <div className="bg-gradient-to-r from-green-600 to-blue-700 text-white py-12">
+        <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="text-center">
-            <div className="bg-white/10 rounded-full p-4 w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-              <Shield className="h-10 w-10" />
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl mb-6">
+              <Shield className="h-8 w-8" />
             </div>
-            <h1 className="text-4xl font-bold mb-4">A-Level Certificate Verification</h1>
-            <p className="text-xl text-green-100 mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">Public Certificate Verification</h1>
+            <p className="text-lg md:text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
               Verify any A-Level certificate in Nigeria with our secure token-based system
             </p>
-            <div className="grid md:grid-cols-3 gap-6 text-center">
-              <div className="bg-white/10 rounded-lg p-4">
-                <CreditCard className="h-8 w-8 mx-auto mb-2" />
-                <h3 className="font-semibold">Purchase Token</h3>
-                <p className="text-sm text-green-100">₦500 per verification</p>
+            <div className="grid sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                <CreditCard className="h-6 w-6 mx-auto mb-2" />
+                <h3 className="font-semibold text-sm">Purchase Token</h3>
+                <p className="text-xs text-blue-100">₦500 per verification</p>
               </div>
-              <div className="bg-white/10 rounded-lg p-4">
-                <Search className="h-8 w-8 mx-auto mb-2" />
-                <h3 className="font-semibold">Enter Details</h3>
-                <p className="text-sm text-green-100">Certificate info & token</p>
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                <Search className="h-6 w-6 mx-auto mb-2" />
+                <h3 className="font-semibold text-sm">Enter Details</h3>
+                <p className="text-xs text-blue-100">Certificate info & token</p>
               </div>
-              <div className="bg-white/10 rounded-lg p-4">
-                <CheckCircle className="h-8 w-8 mx-auto mb-2" />
-                <h3 className="font-semibold">Get Results</h3>
-                <p className="text-sm text-green-100">Instant verification</p>
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                <CheckCircle className="h-6 w-6 mx-auto mb-2" />
+                <h3 className="font-semibold text-sm">Get Results</h3>
+                <p className="text-xs text-blue-100">Instant verification</p>
               </div>
             </div>
           </div>
@@ -195,28 +156,28 @@ const PublicVerify = () => {
 
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Tab Navigation */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
           <div className="flex border-b">
             <button
               onClick={() => setActiveTab('purchase')}
-              className={`flex-1 py-4 px-6 text-center font-medium transition-colors ${
+              className={`flex-1 py-3 px-4 text-center font-medium transition-colors ${
                 activeTab === 'purchase'
-                  ? 'bg-gradient-to-r from-green-600 to-green-800 text-white'
+                  ? 'bg-gradient-to-r from-green-600 to-blue-600 text-white'
                   : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
               }`}
             >
-              <CreditCard className="h-5 w-5 inline mr-2" />
+              <CreditCard className="h-4 w-4 inline mr-2" />
               Purchase Token
             </button>
             <button
               onClick={() => setActiveTab('verify')}
-              className={`flex-1 py-4 px-6 text-center font-medium transition-colors ${
+              className={`flex-1 py-3 px-4 text-center font-medium transition-colors ${
                 activeTab === 'verify'
-                  ? 'bg-gradient-to-r from-green-600 to-green-800 text-white'
+                  ? 'bg-gradient-to-r from-green-600 to-blue-600 text-white'
                   : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
               }`}
             >
-              <Search className="h-5 w-5 inline mr-2" />
+              <Search className="h-4 w-4 inline mr-2" />
               Verify Certificate
             </button>
           </div>
@@ -238,9 +199,9 @@ const PublicVerify = () => {
 
           {/* Purchase Token Tab */}
           {activeTab === 'purchase' && (
-            <div className="p-6">
+            <div className="p-4 md:p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Purchase Verification Token</h2>
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">Purchase Verification Token</h2>
                 <p className="text-gray-600">
                   Get a verification token for ₦500 to verify any A-Level certificate. Token is valid for 30 days.
                 </p>
@@ -261,7 +222,7 @@ const PublicVerify = () => {
                   </p>
                   <button
                     onClick={() => setActiveTab('verify')}
-                    className="bg-gradient-to-r from-green-600 to-green-800 text-white px-6 py-2 rounded-lg hover:from-green-700 hover:to-green-900 transition-colors"
+                    className="bg-gradient-to-r from-green-600 to-blue-600 text-white px-6 py-2 rounded-lg hover:from-green-700 hover:to-blue-700 transition-colors"
                   >
                     Verify Certificate Now
                   </button>
@@ -359,7 +320,7 @@ const PublicVerify = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-gradient-to-r from-green-600 to-green-800 text-white py-3 px-6 rounded-lg hover:from-green-700 hover:to-green-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-6 rounded-lg hover:from-green-700 hover:to-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
                     {loading ? (
                       <>
@@ -380,9 +341,9 @@ const PublicVerify = () => {
 
           {/* Verify Certificate Tab */}
           {activeTab === 'verify' && (
-            <div className="p-6">
+            <div className="p-4 md:p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Verify A-Level Certificate</h2>
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">Verify A-Level Certificate</h2>
                 <p className="text-gray-600">
                   Enter your token code and certificate details to verify authenticity.
                 </p>
@@ -482,9 +443,9 @@ const PublicVerify = () => {
                           yearOfGraduation: ''
                         });
                       }}
-                      className="bg-gradient-to-r from-green-600 to-green-800 text-white px-6 py-2 rounded-lg hover:from-green-700 hover:to-green-900 transition-colors mr-4"
+                      className="bg-gradient-to-r from-green-600 to-blue-600 text-white px-6 py-2 rounded-lg hover:from-green-700 hover:to-blue-700 transition-colors mr-4"
                     >
-                      Re-Verify Certificate
+                      Verify Another
                     </button>
                     <button
                       onClick={() => setActiveTab('purchase')}
@@ -565,7 +526,7 @@ const PublicVerify = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-gradient-to-r from-green-600 to-green-800 text-white py-3 px-6 rounded-lg hover:from-green-700 hover:to-green-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-6 rounded-lg hover:from-green-700 hover:to-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
                     {loading ? (
                       <>
@@ -586,34 +547,40 @@ const PublicVerify = () => {
         </div>
 
         {/* Information Section */}
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center mb-4">
-              <Shield className="h-8 w-8 text-green-700 mr-3" />
-              <h3 className="text-lg font-semibold">Secure Verification</h3>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex items-center mb-3">
+              <div className="bg-green-100 rounded-lg p-2 mr-3">
+                <Shield className="h-6 w-6 text-green-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Secure Verification</h3>
             </div>
-            <p className="text-gray-600 text-sm">
-              Our token-based system ensures secure and authentic certificate verification with complete audit trails.
+            <p className="text-gray-600 text-sm leading-relaxed">
+              Token-based system ensures secure verification with complete audit trails.
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center mb-4">
-              <Users className="h-8 w-8 text-green-600 mr-3" />
-              <h3 className="text-lg font-semibold">Trusted by Employers</h3>
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex items-center mb-3">
+              <div className="bg-blue-100 rounded-lg p-2 mr-3">
+                <Users className="h-6 w-6 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Trusted Platform</h3>
             </div>
-            <p className="text-gray-600 text-sm">
-              Used by leading companies and universities across Nigeria for reliable certificate verification.
+            <p className="text-gray-600 text-sm leading-relaxed">
+              Used by leading companies and universities for reliable verification.
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center mb-4">
-              <FileText className="h-8 w-8 text-purple-600 mr-3" />
-              <h3 className="text-lg font-semibold">Comprehensive Database</h3>
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 sm:col-span-2 lg:col-span-1">
+            <div className="flex items-center mb-3">
+              <div className="bg-purple-100 rounded-lg p-2 mr-3">
+                <FileText className="h-6 w-6 text-purple-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Complete Database</h3>
             </div>
-            <p className="text-gray-600 text-sm">
-              Access to certificates from all major educational institutions and examination bodies in Nigeria.
+            <p className="text-gray-600 text-sm leading-relaxed">
+              Access to certificates from all major institutions and exam bodies.
             </p>
           </div>
         </div>

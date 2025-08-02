@@ -43,10 +43,10 @@ const Verify = () => {
               <Lock className="h-10 w-10 text-amber-600" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              Certificate Verification Portal
+              Certificate Verification Portal for Institutions
             </h1>
             <p className="text-lg text-gray-600 mb-8">
-              Access to certificate verification is restricted to registered and approved institutions only.
+              Access to certificate verification for institutions is restricted to registered and approved institutions only.
             </p>
             
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-8">
