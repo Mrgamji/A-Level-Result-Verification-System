@@ -43,13 +43,13 @@ app.get('/api/health', (req, res) => {
 // Initialize database and start server
 async function startServer() {
   try {
-    await sequelize.sync({ force: false });
+    await sequelize.sync({ force: false }); // ✅ Keeps data intact
     console.log('Database synced successfully');
-    
-    // Create admin user if not exists
+
+    // Optional: Create admin user if not exists
     const { User } = require('./models');
     const bcrypt = require('bcryptjs');
-    
+
     const adminExists = await User.findOne({ where: { role: 'admin' } });
     if (!adminExists) {
       const hashedPassword = await bcrypt.hash('admin123', 10);
@@ -60,7 +60,7 @@ async function startServer() {
       });
       console.log('Admin user created: admin@system.com / admin123');
     }
-    
+
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
@@ -68,5 +68,6 @@ async function startServer() {
     console.error('Unable to start server:', error);
   }
 }
+
 
 startServer();

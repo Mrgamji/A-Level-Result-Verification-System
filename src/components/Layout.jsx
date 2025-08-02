@@ -58,7 +58,11 @@ const Layout = ({ children }) => {
                 className="flex items-center space-x-2 flex-shrink-0"
               >
                 <div className="h-8 w-8 bg-gradient-to-br from-green-600 to-blue-600 rounded-lg flex items-center justify-center">
-                  <Shield className="h-5 w-5 text-white" />
+                  <img
+                    src="/uploads/logo.png"
+                    alt="A-Level Verification Logo"
+                    className="h-6 w-6 object-contain"
+                  />
                 </div>
                 <span className="text-lg lg:text-xl font-bold text-gray-900 hidden sm:block">
                   A-Level Verification
