@@ -4,6 +4,7 @@ import {
   Shield, CheckCircle, Users, FileText, Search, ArrowRight, Globe, Lock, 
   Database, Award, BookOpen, GraduationCap, Star, Zap, Building 
 } from 'lucide-react';
+
 const Home = () => {
   const features = [
     {
