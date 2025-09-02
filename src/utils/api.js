@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://a-level-result-verification-system.onrender.com/api';
+const API_BASE_URL =
+  window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:10000/api"
+    : "https://a-level-result-verification-system.onrender.com/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
