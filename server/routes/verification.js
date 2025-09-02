@@ -5,8 +5,9 @@ const csv = require("csv-parser");
 const fs = require("fs");
 const path = require("path");
 
-const { Student, Institution, VerificationLog, User } = require("../models");
+const { Student, Institution, VerificationLog } = require("../models");
 const generateCertificate = require("../../src/utils/generateCertificate");
+const { authenticateToken } = require("../middleware/auth");
 
 // --- File Upload Setup for Bulk Verify ---
 const upload = multer({ dest: "uploads/" });
@@ -24,19 +25,26 @@ function normalizeStudent(student) {
 // ===================
 // Single Verification
 // ===================
-router.post("/verify", async (req, res) => {
+router.post("/verify", authenticateToken, async (req, res) => {
   try {
-    const { regNumber, userId } = req.body;
+    const { certificateNumber } = req.body;
+    const user = req.user; // ✅ from JWT middleware
 
-    // Get user
-    const user = await User.findByPk(userId);
-    if (!user || user.credits < 1) {
-      return res.status(403).json({ message: "Not enough credits", success: false });
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized", success: false });
+    }
+
+    if (user.credits < 1) {
+      return res.status(403).json({
+        message: "Not enough credits",
+        success: false,
+        creditsRemaining: user.credits,
+      });
     }
 
     // Find student
     const student = await Student.findOne({
-      where: { certificateNumber: regNumber },
+      where: { certificateNumber: certificateNumber },
       include: [{ model: Institution }],
     });
 
@@ -44,7 +52,7 @@ router.post("/verify", async (req, res) => {
       return res.status(404).json({
         message: "Certificate Not Found or Not Verified",
         success: false,
-        creditsRemaining: user.credits - 1,
+        creditsRemaining: user.credits,
       });
     }
 
@@ -57,18 +65,28 @@ router.post("/verify", async (req, res) => {
       userId: user.id,
       studentId: student.id,
       institutionId: student.institutionId,
+      certificateNumber: certificateNumber,
+      ipAddress: req.ip,
+      status: student ? "success" : "failed",
+  
     });
 
     // Generate certificate
-    const downloadUrl = generateCertificate(normalizeStudent(student));
+ // Generate certificate
+    const downloadUrl = await generateCertificate(normalizeStudent(student));
+    
 
     res.json({
       success: true,
       message: "Certificate verified successfully",
-      student: {
-        regNumber: student.certificateNumber,
-        name: student.fullName,
-        course: student.department,
+      data: {
+        fullName: student.fullName,
+        certificateNumber: student.certificateNumber,
+        department: student.department,
+        classOfDegree: student.classOfDegree,
+        certificateType: student.certificateType,
+        yearOfEntry: student.yearOfEntry,
+        yearOfGraduation: student.yearOfGraduation,
         institution: student.Institution.name,
       },
       downloadUrl,
@@ -83,13 +101,12 @@ router.post("/verify", async (req, res) => {
 // ===================
 // Bulk Verification
 // ===================
-router.post("/bulk-verify", upload.single("file"), async (req, res) => {
+router.post("/bulk-verify", authenticateToken, upload.single("file"), async (req, res) => {
   try {
-    const { userId } = req.body;
+    const user = req.user; // ✅ from JWT middleware
 
-    const user = await User.findByPk(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found", success: false });
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded", success: false });
     }
 
     const filePath = req.file.path;
@@ -105,6 +122,22 @@ router.post("/bulk-verify", upload.single("file"), async (req, res) => {
         .on("end", resolve)
         .on("error", reject);
     });
+
+    // If no regNumbers found
+    if (regNumbers.length === 0) {
+      fs.unlinkSync(filePath);
+      return res.status(400).json({ message: "No registration numbers found in file", success: false });
+    }
+
+    // Check credits
+    if (user.credits < regNumbers.length) {
+      fs.unlinkSync(filePath);
+      return res.status(403).json({
+        message: `Not enough credits. You have ${user.credits} but tried to verify ${regNumbers.length} certificates.`,
+        success: false,
+        creditsRemaining: user.credits,
+      });
+    }
 
     // Find students
     const students = await Student.findAll({
@@ -122,9 +155,14 @@ router.post("/bulk-verify", upload.single("file"), async (req, res) => {
       const student = studentMap[reg];
 
       if (student) {
-        // Deduct credit per student
+        // Deduct credit
         if (user.credits < 1) {
-          results.push({ regNumber: reg, status: "Failed - Not enough credits" });
+          results.push({
+            regNumber: reg,
+            success: false,
+            message: "Not enough credits",
+            data: null,
+          });
           continue;
         }
 
@@ -136,21 +174,30 @@ router.post("/bulk-verify", upload.single("file"), async (req, res) => {
           userId: user.id,
           studentId: student.id,
           institutionId: student.institutionId,
+          certificateNumber: student.certificateNumber,   // ✅ use regNumber or actual cert no
+          ipAddress: req.ip || req.connection.remoteAddress, // ✅ capture requester IP
         });
 
         // Generate certificate
-        const downloadUrl = generateCertificate(normalizeStudent(student));
+        const downloadUrl = await generateCertificate(normalizeStudent(student));
 
         results.push({
           regNumber: reg,
-          status: "Verified",
-          name: student.fullName,
-          course: student.department,
-          institution: student.Institution.name,
-          downloadUrl,
+          success: true,
+          message: "Verified",
+          data: {
+            fullName: student.fullName,
+            institution: student.Institution.name,
+            downloadUrl,
+          },
         });
       } else {
-        results.push({ regNumber: reg, status: "Certificate Not Found" });
+        results.push({
+          regNumber: reg,
+          success: false,
+          message: "Certificate Not Found",
+          data: null,
+        });
       }
     }
 

@@ -1,21 +1,33 @@
 import React, { useState } from "react";
 import Papa from "papaparse";
-import { Upload, AlertTriangle, FileSpreadsheet, Loader2, CheckCircle, XCircle, Download } from "lucide-react";
+import {
+  Upload,
+  AlertTriangle,
+  FileSpreadsheet,
+  Loader2,
+  CheckCircle,
+  XCircle,
+  Download,
+} from "lucide-react";
 import api from "../utils/api";
 import { useAuth } from "../contexts/AuthContext";
 
 const BulkVerify = () => {
   const { user } = useAuth();
+  const [file, setFile] = useState(null);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [results, setResults] = useState(null);
 
+  // File Upload + Preview
   const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const uploadedFile = e.target.files[0];
+    if (!uploadedFile) return;
 
-    Papa.parse(file, {
+    setFile(uploadedFile);
+
+    Papa.parse(uploadedFile, {
       header: true,
       skipEmptyLines: true,
       complete: (result) => {
@@ -23,22 +35,38 @@ const BulkVerify = () => {
           alert("CSV must have a 'regNumber' column");
           return;
         }
-        setRows(result.data.map((row, index) => ({ id: index + 1, regNumber: row.regNumber.trim() })));
+        setRows(
+          result.data.map((row, index) => ({
+            id: index + 1,
+            regNumber: row.regNumber.trim(),
+          }))
+        );
         setResults(null);
       },
     });
   };
 
+  // Submit to backend
   const handleBulkVerification = async () => {
+    if (!file) {
+      alert("Please upload a CSV file first");
+      return;
+    }
+
     setLoading(true);
     setShowConfirmModal(false);
+
     try {
-      const response = await api.post("/verification/bulk-verify", {
-        regNumbers: rows.map((r) => r.regNumber),
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await api.post("/verification/bulk-verify", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
+
       setResults(response.data.results);
     } catch (error) {
-      console.error(error);
+      console.error("Bulk verification error:", error);
       alert("Bulk verification failed. Try again later.");
     } finally {
       setLoading(false);
@@ -48,13 +76,17 @@ const BulkVerify = () => {
   return (
     <div className="max-w-6xl mx-auto">
       <div className="bg-white rounded-2xl shadow-xl p-10">
+        {/* Header */}
         <div className="text-center mb-8">
           <div className="bg-blue-100 rounded-full p-6 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
             <FileSpreadsheet className="h-10 w-10 text-blue-600" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Bulk Certificate Verification</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Bulk Certificate Verification
+          </h1>
           <p className="text-gray-600">
-            Upload a CSV file with a <code>regNumber</code> column. Each registration number will be verified.
+            Upload a CSV file with a <code>regNumber</code> column. Each
+            registration number will be verified.
           </p>
         </div>
 
@@ -74,13 +106,17 @@ const BulkVerify = () => {
             onChange={handleFileUpload}
             className="hidden"
           />
-          <p className="text-sm text-gray-500 mt-2">Ensure your CSV contains a <b>regNumber</b> column.</p>
+          <p className="text-sm text-gray-500 mt-2">
+            Ensure your CSV contains a <b>regNumber</b> column.
+          </p>
         </div>
 
         {/* Preview Table */}
         {rows.length > 0 && !results && (
           <div>
-            <h2 className="text-lg font-semibold mb-3">Preview ({rows.length} records)</h2>
+            <h2 className="text-lg font-semibold mb-3">
+              Preview ({rows.length} records)
+            </h2>
             <div className="overflow-x-auto border rounded-lg">
               <table className="min-w-full text-sm text-left">
                 <thead className="bg-gray-100 text-gray-700 font-semibold">
@@ -152,7 +188,9 @@ const BulkVerify = () => {
                         {res.success ? (
                           <div>
                             <p className="font-medium">{res.data.fullName}</p>
-                            <p className="text-gray-500 text-xs">{res.data.institution}</p>
+                            <p className="text-gray-500 text-xs">
+                              {res.data.institution}
+                            </p>
                           </div>
                         ) : (
                           <span className="text-gray-400 text-sm">N/A</span>
@@ -186,10 +224,15 @@ const BulkVerify = () => {
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
           <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center">
             <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Confirm Bulk Verification</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
+              Confirm Bulk Verification
+            </h2>
             <p className="text-gray-600 mb-6">
-              This action will deduct <span className="font-semibold text-red-600">{rows.length} tokens</span>,  
-              one for each certificate. Are you sure you want to proceed?
+              This action will deduct{" "}
+              <span className="font-semibold text-red-600">
+                {rows.length} tokens
+              </span>
+              , one for each certificate. Are you sure you want to proceed?
             </p>
             <div className="flex justify-center gap-4">
               <button

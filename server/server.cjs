@@ -27,6 +27,11 @@ app.use('/api/payments', require('./routes/payments'));
 app.use('/api/announcements', require('./routes/announcements'));
 app.use('/api/public', require('./routes/public'));
 
+// Serve static certificate files
+app.use(
+  "/uploads/certificates",
+  express.static(path.join(__dirname, "uploads/certificates"))
+);
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
