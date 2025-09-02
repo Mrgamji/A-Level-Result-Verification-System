@@ -337,7 +337,7 @@ const Institutions = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+          <div className="px-3 lg:px-6 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex-1 flex justify-between sm:hidden">
               <button
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -360,7 +360,7 @@ const Institutions = () => {
             </div>
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm text-gray-700">
+                <p className="text-xs lg:text-sm text-gray-700">
                   Showing <span className="font-medium">{(currentPage - 1) * perPage + 1}</span> to{' '}
                   <span className="font-medium">
                     {Math.min(currentPage * perPage, filtered.length)}
@@ -369,11 +369,11 @@ const Institutions = () => {
                 </p>
               </div>
               <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px text-sm" aria-label="Pagination">
                   <button
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
+                    className={`relative inline-flex items-center px-2 py-1.5 rounded-l-md border border-gray-300 bg-white font-medium ${
                       currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-50'
                     }`}
                   >
@@ -384,7 +384,7 @@ const Institutions = () => {
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium ${
+                      className={`relative inline-flex items-center px-3 py-1.5 border border-gray-300 font-medium ${
                         currentPage === page
                           ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
                           : 'bg-white text-gray-500 hover:bg-gray-50'
@@ -396,7 +396,7 @@ const Institutions = () => {
                   <button
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
-                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
+                    className={`relative inline-flex items-center px-2 py-1.5 rounded-r-md border border-gray-300 bg-white font-medium ${
                       currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-50'
                     }`}
                   >

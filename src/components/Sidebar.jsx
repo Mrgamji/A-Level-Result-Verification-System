@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
-const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
+const Sidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
 
@@ -54,12 +54,12 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
           {!isCollapsed && (
             <div className="flex items-center space-x-2">
               <Shield className="h-8 w-8 text-blue-600" />
-              <span className="text-lg font-bold text-gray-900">A-Level</span>
+              <span className="text-base lg:text-lg font-bold text-gray-900">A-Level</span>
             </div>
           )}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-1 rounded-md hover:bg-gray-100 transition-colors"
+            className="p-1 rounded-md hover:bg-gray-100 transition-colors hidden lg:block"
           >
             {isCollapsed ? (
               <ChevronRight className="h-5 w-5 text-gray-600" />
@@ -99,6 +99,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
           <Link
             key={item.name}
             to={item.href}
+            onClick={onMobileClose}
             className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
               isActive(item.href)
                 ? 'bg-blue-100 text-blue-700'
@@ -115,7 +116,10 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
       {/* Logout */}
       <div className="p-4 border-t border-gray-200">
         <button
-          onClick={logout}
+          onClick={() => {
+            logout();
+            onMobileClose?.();
+          }}
           className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors w-full ${
             isCollapsed ? 'justify-center' : ''
           }`}

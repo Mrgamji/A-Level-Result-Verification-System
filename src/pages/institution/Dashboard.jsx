@@ -170,25 +170,25 @@ const Dashboard = () => {
     <>
          {/* Password Change Alert */}
          {showPasswordAlert && (
-        <div className="mb-4 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-r flex items-center">
+        <div className="mb-4 p-3 lg:p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-r">
           <AlertTriangle className="h-5 w-5 text-yellow-600 mr-2" />
           <div className="flex-1">
             <p className="text-yellow-800 font-medium">
               For security reasons, please change your temporary password.
             </p>
-            <div className="mt-2 flex space-x-3">
+            <div className="mt-2 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
               <button
                 onClick={() => {
                   navigate('/institution/change-password');
                   setShowPasswordAlert(false);
                 }}
-                className="text-sm bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700"
+                className="text-sm bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 transition-colors"
               >
                 Change Password Now
               </button>
               <button
                 onClick={() => setShowPasswordAlert(false)}
-                className="text-sm text-yellow-800 hover:text-yellow-900"
+                className="text-sm text-yellow-800 hover:text-yellow-900 transition-colors"
               >
                 Remind Me Later
               </button>
@@ -205,21 +205,21 @@ const Dashboard = () => {
       <div className="space-y-6">
 
         {/* Header with Welcome and Time */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-6 lg:mb-8 gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+            <h1 className="text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900">
               Welcome{user?.institutionName ? `, ${user.institutionName}` : ''}!
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-sm lg:text-base text-gray-600 mt-1">
               Here's what's happening with your institution today
             </p>
           </div>
 
-          <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-100">
-            <div className="text-2xl font-semibold text-gray-800">
+          <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-100 w-full sm:w-auto">
+            <div className="text-lg lg:text-2xl font-semibold text-gray-800 text-center lg:text-left">
               {formatTime(currentTime)}
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-xs lg:text-sm text-gray-500 text-center lg:text-left">
               {formatDate(currentTime)}
             </div>
           </div>
@@ -227,34 +227,34 @@ const Dashboard = () => {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-3 bg-red-50 border-l-4 border-red-500 rounded-r">
+          <div className="mb-6 p-3 lg:p-4 bg-red-50 border-l-4 border-red-500 rounded-r">
             <div className="flex items-center">
               <XCircle className="h-5 w-5 text-red-500 mr-2" />
-              <p className="text-red-700">{error}</p>
+              <p className="text-sm lg:text-base text-red-700">{error}</p>
             </div>
           </div>
         )}
 
         {/* Loading State */}
         {loading ? (
-          <div className="flex items-center justify-center min-h-64">
+          <div className="flex items-center justify-center min-h-32 lg:min-h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         ) : (
           <>
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6 lg:mb-8">
               {statCards.map((card) => (
                 <div
                   key={card.label}
-                  className={`p-5 rounded-xl shadow-sm border border-gray-100 ${card.bg} transition-all hover:shadow-md`}
+                  className={`p-3 lg:p-5 rounded-lg lg:rounded-xl shadow-sm border border-gray-100 ${card.bg} transition-all hover:shadow-md`}
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">{card.label}</p>
-                      <p className="mt-1 text-2xl font-semibold text-gray-900">{card.value}</p>
+                      <p className="text-xs lg:text-sm font-medium text-gray-600">{card.label}</p>
+                      <p className="mt-1 text-lg lg:text-2xl font-semibold text-gray-900">{card.value}</p>
                     </div>
-                    <div className={`p-2 rounded-lg ${card.color} bg-white bg-opacity-50`}>
+                    <div className={`p-1.5 lg:p-2 rounded-lg ${card.color} bg-white bg-opacity-50`}>
                       {card.icon}
                     </div>
                   </div>
@@ -264,21 +264,21 @@ const Dashboard = () => {
 
             {/* Quick Actions */}
             <div className="mb-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <h2 className="text-base lg:text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                 {quickActions.map((action) => (
                   <button
                     key={action.title}
                     onClick={action.action}
-                    className={`flex items-center justify-between p-4 rounded-lg border border-gray-100 ${action.color} ${action.hover} transition-all hover:shadow-md group`}
+                    className={`flex items-center justify-between p-3 lg:p-4 rounded-lg border border-gray-100 ${action.color} ${action.hover} transition-all hover:shadow-md group`}
                   >
                     <div className="flex items-center">
-                      <div className={`p-2 rounded-md ${action.color.replace('text', 'bg').replace('600', '100')} group-hover:bg-opacity-20 mr-3`}>
+                      <div className={`p-1.5 lg:p-2 rounded-md ${action.color.replace('text', 'bg').replace('600', '100')} group-hover:bg-opacity-20 mr-2 lg:mr-3`}>
                         {action.icon}
                       </div>
-                      <span className="font-medium">{action.title}</span>
+                      <span className="text-sm lg:text-base font-medium">{action.title}</span>
                     </div>
-                    <ChevronRight className="h-4 w-4 opacity-70 group-hover:opacity-100" />
+                    <ChevronRight className="h-3 w-3 lg:h-4 lg:w-4 opacity-70 group-hover:opacity-100" />
                   </button>
                 ))}
               </div>
@@ -286,22 +286,22 @@ const Dashboard = () => {
 
             {/* Recent Activity Section */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-5 border-b border-gray-100">
-                <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
+              <div className="p-4 lg:p-5 border-b border-gray-100">
+                <h2 className="text-base lg:text-lg font-semibold text-gray-900">Recent Activity</h2>
               </div>
               <div className="divide-y divide-gray-100">
                 {/* Placeholder for recent activity items */}
-                <div className="p-5">
-                  <div className="flex items-center justify-center py-8 text-gray-400">
-                    <FileText className="h-5 w-5 mr-2" />
-                    <span>No recent activity yet</span>
+                <div className="p-4 lg:p-5">
+                  <div className="flex items-center justify-center py-6 lg:py-8 text-gray-400">
+                    <FileText className="h-4 w-4 lg:h-5 lg:w-5 mr-2" />
+                    <span className="text-sm lg:text-base">No recent activity yet</span>
                   </div>
                 </div>
               </div>
-              <div className="p-4 bg-gray-50 text-right">
+              <div className="p-3 lg:p-4 bg-gray-50 text-center sm:text-right">
                 <button
                   onClick={() => navigate('/institution/credits')}
-                  className="text-sm font-medium text-blue-600 hover:text-blue-800"
+                  className="text-xs lg:text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
                 >
                   View all activity →
                 </button>

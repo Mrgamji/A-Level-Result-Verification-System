@@ -8,6 +8,7 @@ const { User, Institution, Student, VerificationLog } = require('../models');
 const { authenticateToken, requireRole, JWT_SECRET } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
 const db = require('../config/database');
+const { PublicVerification, PublicToken } = require('../models');
 
 // Get verifications by institution (SQLite compatible)
 router.get('/chart/verifications-by-institution', authenticateToken, requireRole('admin'), async (req, res) => {
@@ -96,6 +97,54 @@ router.get('/chart/verifications-over-time', authenticateToken, requireRole('adm
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch timeline data' });
+  }
+});
+
+// Get public verification logs
+router.get('/public-verifications', authenticateToken, requireRole('admin'), async (req, res) => {
+  try {
+    const verifications = await PublicVerification.findAll({
+      include: [{
+        model: PublicToken,
+        attributes: ['tokenCode', 'email', 'fullName', 'organization', 'purpose']
+      }],
+      order: [['createdAt', 'DESC']],
+      limit: 100
+    });
+
+    res.json(verifications);
+  } catch (error) {
+    console.error('Error fetching public verifications:', error);
+    res.status(500).json({ error: 'Failed to fetch public verifications' });
+  }
+});
+
+// Get public verification stats
+router.get('/public-verification-stats', authenticateToken, requireRole('admin'), async (req, res) => {
+  try {
+    const [
+      totalVerifications,
+      successfulVerifications,
+      totalTokensSold,
+      totalRevenue
+    ] = await Promise.all([
+      PublicVerification.count(),
+      PublicVerification.count({ where: { success: true } }),
+      PublicToken.count({ where: { status: 'used' } }),
+      PublicToken.sum('amount', { where: { status: 'used' } }) || 0
+    ]);
+
+    res.json({
+      totalVerifications,
+      successfulVerifications,
+      failedVerifications: totalVerifications - successfulVerifications,
+      totalTokensSold,
+      totalRevenue,
+      successRate: totalVerifications > 0 ? ((successfulVerifications / totalVerifications) * 100).toFixed(1) : 0
+    });
+  } catch (error) {
+    console.error('Error fetching public verification stats:', error);
+    res.status(500).json({ error: 'Failed to fetch stats' });
   }
 });
 

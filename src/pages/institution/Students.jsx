@@ -166,16 +166,20 @@ const Students = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">Students Management</h1>
-        <div className="flex flex-col sm:flex-row gap-2">
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+        <div>
+          <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Students Management</h1>
+          <p className="text-sm text-gray-500 mt-1">Manage your institution's student records</p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
           <a
             href="/uploads/sample_upload.csv"
             download
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center transition-colors"
+            className="bg-green-600 text-white px-3 lg:px-4 py-2 rounded-lg hover:bg-green-700 flex items-center justify-center transition-colors text-sm"
           >
             <Upload className="w-4 h-4 mr-2" />
-            Download CSV Template
+            <span className="hidden sm:inline">Download CSV Template</span>
+            <span className="sm:hidden">CSV Template</span>
           </a>
           <div>
             <input
@@ -188,20 +192,26 @@ const Students = () => {
             />
             <label
               htmlFor="csv-upload"
-              className={`bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 cursor-pointer flex items-center transition-colors ${
+              className={`bg-white text-gray-700 border border-gray-300 px-3 lg:px-4 py-2 rounded-lg hover:bg-gray-50 cursor-pointer flex items-center justify-center transition-colors text-sm ${
                 uploading ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
               <Upload className="w-4 h-4 mr-2" />
-              {uploading ? 'Uploading...' : 'Upload CSV'}
+              {uploading ? 'Uploading...' : (
+                <>
+                  <span className="hidden sm:inline">Upload CSV</span>
+                  <span className="sm:hidden">Upload</span>
+                </>
+              )}
             </label>
           </div>
           <Link
             to="/institution/add-student"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center transition-colors"
+            className="bg-blue-600 text-white px-3 lg:px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center transition-colors text-sm"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Add Student
+            <span className="hidden sm:inline">Add Student</span>
+            <span className="sm:hidden">Add</span>
           </Link>
         </div>
       </div>
@@ -214,18 +224,18 @@ const Students = () => {
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <input
             type="text"
             placeholder="Search name or certificate..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
           />
           <select
             value={filterDept}
             onChange={(e) => setFilterDept(e.target.value)}
-            className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
           >
             <option value="">All Departments</option>
             {departments.map((dept) => (
@@ -235,7 +245,7 @@ const Students = () => {
           <select
             value={filterYear}
             onChange={(e) => setFilterYear(e.target.value)}
-            className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
           >
             <option value="">All Graduation Years</option>
             {graduationYears.map((year) => (
@@ -243,7 +253,7 @@ const Students = () => {
             ))}
           </select>
         </div>
-        <div className="mt-4 text-sm text-gray-600">
+        <div className="mt-4 text-xs lg:text-sm text-gray-600">
           Showing {filteredStudents.length} of {students.length} students
         </div>
       </div>
@@ -251,19 +261,19 @@ const Students = () => {
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Student Details
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Certificate
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
                   Academic Info
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -271,43 +281,47 @@ const Students = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {paginatedStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={4} className="px-3 lg:px-6 py-8 text-center text-gray-500">
                     {students.length === 0 ? 'No students available' : 'No students match your filters'}
                   </td>
                 </tr>
               ) : (
                 paginatedStudents.map((student) => (
                   <tr key={student.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
+                    <td className="px-3 lg:px-6 py-4">
                       <div>
                         <div className="text-sm font-medium text-gray-900">{student.fullName}</div>
-                        <div className="text-sm text-gray-500">{student.department}</div>
+                        <div className="text-xs lg:text-sm text-gray-500">{student.department}</div>
+                        <div className="md:hidden text-xs text-gray-400 mt-1">
+                          {student.yearOfEntry} - {student.yearOfGraduation} • {student.classOfDegree}
+                        </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 lg:px-6 py-4">
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{student.certificateNumber}</div>
+                        <div className="text-xs lg:text-sm font-medium text-gray-900 font-mono">{student.certificateNumber}</div>
                         <div className="mt-1">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white ${getCertificateTypeColor(student.certificateType)}`}>
-                            {student.certificateType}
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-white ${getCertificateTypeColor(student.certificateType)}`}>
+                            <span className="hidden sm:inline">{student.certificateType}</span>
+                            <span className="sm:hidden">{student.certificateType.split(' ')[0]}</span>
                           </span>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 lg:px-6 py-4 hidden md:table-cell">
                       <div className="text-sm text-gray-900">
                         <div>{student.yearOfEntry} - {student.yearOfGraduation}</div>
-                        <div className="text-gray-500">{student.classOfDegree}</div>
+                        <div className="text-xs text-gray-500">{student.classOfDegree}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
+                    <td className="px-3 lg:px-6 py-4 text-sm font-medium">
+                      <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2">
                         <button
                           onClick={() => {
                             setSelectedStudent({ ...student });
                             setShowEditModal(true);
                           }}
-                          className="text-blue-600 hover:text-blue-900 transition-colors"
+                          className="text-blue-600 hover:text-blue-900 transition-colors text-xs lg:text-sm"
                         >
                           Edit
                         </button>
@@ -316,7 +330,7 @@ const Students = () => {
                             setStudentToDelete(student);
                             setShowDeleteModal(true);
                           }}
-                          className="text-red-600 hover:text-red-900 transition-colors"
+                          className="text-red-600 hover:text-red-900 transition-colors text-xs lg:text-sm"
                         >
                           Delete
                         </button>
@@ -331,24 +345,26 @@ const Students = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="bg-gray-50 px-6 py-3 border-t border-gray-200 flex items-center justify-between">
-            <div className="text-sm text-gray-700">
+          <div className="bg-gray-50 px-3 lg:px-6 py-3 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-xs lg:text-sm text-gray-700">
               Page {currentPage} of {totalPages}
             </div>
             <div className="flex space-x-2">
               <button
                 onClick={() => changePage('prev')}
                 disabled={currentPage === 1}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
+                className="px-2 lg:px-3 py-1 border border-gray-300 rounded-md text-xs lg:text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
               >
-                Previous
+                <span className="hidden sm:inline">Previous</span>
+                <span className="sm:hidden">Prev</span>
               </button>
               <button
                 onClick={() => changePage('next')}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
+                className="px-2 lg:px-3 py-1 border border-gray-300 rounded-md text-xs lg:text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
               >
-                Next
+                <span className="hidden sm:inline">Next</span>
+                <span className="sm:hidden">Next</span>
               </button>
             </div>
           </div>

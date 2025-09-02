@@ -11,7 +11,11 @@ import {
   TrendingUp,
   Activity,
   PieChart as PieChartIcon,
-  BarChart2
+  BarChart2,
+  Globe,
+  CreditCard,
+  Eye,
+  Search
 } from 'lucide-react';
 import {
   LineChart,
@@ -49,6 +53,15 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const { isFirstLogin, showPasswordModal, closePasswordModal } = useFirstLogin();
+  const [publicStats, setPublicStats] = useState({
+    totalVerifications: 0,
+    successfulVerifications: 0,
+    totalTokensSold: 0,
+    totalRevenue: 0,
+    successRate: 0
+  });
+  const [publicVerifications, setPublicVerifications] = useState([]);
+  const [showPublicLogs, setShowPublicLogs] = useState(false);
   const [chartData, setChartData] = useState({
     verificationsByInstitution: [],
     successRate: [],
@@ -61,6 +74,8 @@ const Dashboard = () => {
   useEffect(() => {
     fetchDashboardStats();
     fetchChartData();
+    fetchPublicStats();
+    fetchPublicVerifications();
   }, []);
 
   const fetchDashboardStats = async () => {
@@ -112,6 +127,24 @@ const Dashboard = () => {
       });
     } catch (err) {
       console.error('Chart data load failed:', err);
+    }
+  };
+
+  const fetchPublicStats = async () => {
+    try {
+      const response = await api.get('/public/stats');
+      setPublicStats(response.data);
+    } catch (err) {
+      console.error('Failed to fetch public stats:', err);
+    }
+  };
+
+  const fetchPublicVerifications = async () => {
+    try {
+      const response = await api.get('/public/verifications');
+      setPublicVerifications(response.data);
+    } catch (err) {
+      console.error('Failed to fetch public verifications:', err);
     }
   };
 
@@ -180,6 +213,22 @@ const Dashboard = () => {
       border: 'border-l-pink-500',
       trend: 'down'
     },
+    {
+      label: 'Public Verifications',
+      value: publicStats.totalVerifications,
+      icon: <Globe className="h-5 w-5" />,
+      bg: 'bg-gradient-to-br from-teal-50 to-teal-100',
+      border: 'border-l-teal-500',
+      trend: 'up'
+    },
+    {
+      label: 'Public Revenue',
+      value: `₦${Number(publicStats.totalRevenue).toLocaleString()}`,
+      icon: <CreditCard className="h-5 w-5" />,
+      bg: 'bg-gradient-to-br from-cyan-50 to-cyan-100',
+      border: 'border-l-cyan-500',
+      trend: 'up'
+    },
   ];
 
   const renderTrendIcon = (trend) => {
@@ -195,20 +244,27 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
-          <p className="text-sm text-gray-500">Welcome back! Here's what's happening with your platform.</p>
+          <p className="text-sm text-gray-500 hidden sm:block">Welcome back! Here's what's happening with your platform.</p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 w-full sm:w-auto">
           <button 
             onClick={fetchDashboardStats} 
-            className="flex items-center text-sm text-blue-600 hover:text-blue-800"
+            className="flex items-center text-sm text-blue-600 hover:text-blue-800 px-3 py-2 rounded-md hover:bg-blue-50 transition-colors"
           >
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
             Refresh
+          </button>
+          <button
+            onClick={() => setShowPublicLogs(!showPublicLogs)}
+            className="flex items-center text-sm text-teal-600 hover:text-teal-800 px-3 py-2 rounded-md hover:bg-teal-50 transition-colors"
+          >
+            <Eye className="w-4 h-4 mr-1" />
+            {showPublicLogs ? 'Hide' : 'Show'} Public Logs
           </button>
         </div>
       </div>
@@ -242,48 +298,49 @@ const Dashboard = () => {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6">
             {cards.map((card, index) => (
               <div
                 key={index}
-                className={`p-5 rounded-lg shadow border-l-4 ${card.border} ${card.bg} transition-all hover:shadow-md`}
+                className={`p-4 lg:p-5 rounded-lg shadow border-l-4 ${card.border} ${card.bg} transition-all hover:shadow-md`}
               >
                 <div className="flex justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">{card.label}</p>
-                    <p className="text-2xl font-semibold text-gray-900 mt-1">
+                    <p className="text-xs lg:text-sm font-medium text-gray-600">{card.label}</p>
+                    <p className="text-lg lg:text-2xl font-semibold text-gray-900 mt-1">
                       {card.value}
                     </p>
                   </div>
-                  <div className={`h-10 w-10 rounded-full flex items-center justify-center ${card.bg.includes('blue') ? 'bg-blue-100' : card.bg.includes('green') ? 'bg-green-100' : card.bg.includes('emerald') ? 'bg-emerald-100' : card.bg.includes('yellow') ? 'bg-yellow-100' : card.bg.includes('purple') ? 'bg-purple-100' : card.bg.includes('orange') ? 'bg-orange-100' : card.bg.includes('indigo') ? 'bg-indigo-100' : 'bg-pink-100'}`}>
+                  <div className={`h-8 w-8 lg:h-10 lg:w-10 rounded-full flex items-center justify-center ${card.bg.includes('blue') ? 'bg-blue-100' : card.bg.includes('green') ? 'bg-green-100' : card.bg.includes('emerald') ? 'bg-emerald-100' : card.bg.includes('yellow') ? 'bg-yellow-100' : card.bg.includes('purple') ? 'bg-purple-100' : card.bg.includes('orange') ? 'bg-orange-100' : card.bg.includes('indigo') ? 'bg-indigo-100' : card.bg.includes('teal') ? 'bg-teal-100' : card.bg.includes('cyan') ? 'bg-cyan-100' : 'bg-pink-100'}`}>
                     {card.icon}
                   </div>
                 </div>
-                <div className="flex items-center mt-4 text-xs text-gray-500">
+                <div className="flex items-center mt-2 lg:mt-4 text-xs text-gray-500">
                   {renderTrendIcon(card.trend)}
-                  <span className="ml-1">{card.trend === 'up' ? 'Increased' : card.trend === 'down' ? 'Decreased' : 'No change'} from last week</span>
+                  <span className="ml-1 hidden lg:inline">{card.trend === 'up' ? 'Increased' : card.trend === 'down' ? 'Decreased' : 'No change'}</span>
+                  <span className="ml-1 lg:hidden">{card.trend === 'up' ? '↑' : card.trend === 'down' ? '↓' : '→'}</span>
                 </div>
               </div>
             ))}
           </div>
 
           <div className="mt-8">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+            <h2 className="text-lg lg:text-xl font-semibold text-gray-800 mb-4 lg:mb-6 flex items-center">
               <BarChart2 className="h-5 w-5 mr-2 text-blue-500" />
               Platform Analytics
             </h2>
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
               {/* Verifications by Institution */}
-              <div className="bg-white p-5 rounded-lg shadow border border-gray-200">
+              <div className="bg-white p-4 lg:p-5 rounded-lg shadow border border-gray-200">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-md font-semibold text-gray-700 flex items-center">
+                  <h3 className="text-sm lg:text-md font-semibold text-gray-700 flex items-center">
                     <Building2 className="h-4 w-4 mr-2 text-blue-500" />
                     Verifications by Institution
                   </h3>
-                  <div className="text-xs text-gray-500">Last 30 days</div>
+                  <div className="text-xs text-gray-500 hidden sm:block">Last 30 days</div>
                 </div>
-                <div className="h-64">
+                <div className="h-48 lg:h-64">
                   {chartData.verificationsByInstitution.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={chartData.verificationsByInstitution}>
@@ -318,15 +375,15 @@ const Dashboard = () => {
               </div>
 
               {/* Verification Success Rate */}
-              <div className="bg-white p-5 rounded-lg shadow border border-gray-200">
+              <div className="bg-white p-4 lg:p-5 rounded-lg shadow border border-gray-200">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-md font-semibold text-gray-700 flex items-center">
+                  <h3 className="text-sm lg:text-md font-semibold text-gray-700 flex items-center">
                     <PieChartIcon className="h-4 w-4 mr-2 text-emerald-500" />
                     Verification Success Rate
                   </h3>
-                  <div className="text-xs text-gray-500">Overall</div>
+                  <div className="text-xs text-gray-500 hidden sm:block">Overall</div>
                 </div>
-                <div className="h-64">
+                <div className="h-48 lg:h-64">
                   {chartData.successRate.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -370,15 +427,15 @@ const Dashboard = () => {
               </div>
 
               {/* Verifications Over Time */}
-              <div className="bg-white p-5 rounded-lg shadow border border-gray-200">
+              <div className="bg-white p-4 lg:p-5 rounded-lg shadow border border-gray-200">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-md font-semibold text-gray-700 flex items-center">
+                  <h3 className="text-sm lg:text-md font-semibold text-gray-700 flex items-center">
                     <TrendingUp className="h-4 w-4 mr-2 text-purple-500" />
                     Verifications Over Time
                   </h3>
-                  <div className="text-xs text-gray-500">Last 7 days</div>
+                  <div className="text-xs text-gray-500 hidden sm:block">Last 7 days</div>
                 </div>
-                <div className="h-64">
+                <div className="h-48 lg:h-64">
                   {chartData.verificationsOverTime.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={chartData.verificationsOverTime}>
@@ -417,6 +474,168 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Public Verification Stats */}
+          <div className="mt-6 lg:mt-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg lg:text-xl font-semibold text-gray-800 flex items-center">
+                <Globe className="h-5 w-5 mr-2 text-teal-500" />
+                Public Verification System
+              </h2>
+              <button
+                onClick={() => setShowPublicLogs(!showPublicLogs)}
+                className="text-sm text-teal-600 hover:text-teal-800 flex items-center px-3 py-1 rounded-md hover:bg-teal-50 transition-colors"
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                {showPublicLogs ? 'Hide Logs' : 'View Logs'}
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs lg:text-sm font-medium text-gray-500">Total Verifications</p>
+                    <p className="text-lg lg:text-2xl font-semibold text-gray-900">{publicStats.totalVerifications}</p>
+                  </div>
+                  <div className="p-2 rounded-full bg-teal-50 text-teal-600">
+                    <Search className="h-4 w-4 lg:h-5 lg:w-5" />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs lg:text-sm font-medium text-gray-500">Success Rate</p>
+                    <p className="text-lg lg:text-2xl font-semibold text-green-600">{publicStats.successRate}%</p>
+                  </div>
+                  <div className="p-2 rounded-full bg-green-50 text-green-600">
+                    <CheckCircle className="h-4 w-4 lg:h-5 lg:w-5" />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs lg:text-sm font-medium text-gray-500">Tokens Sold</p>
+                    <p className="text-lg lg:text-2xl font-semibold text-blue-600">{publicStats.totalTokensSold}</p>
+                  </div>
+                  <div className="p-2 rounded-full bg-blue-50 text-blue-600">
+                    <CreditCard className="h-4 w-4 lg:h-5 lg:w-5" />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs lg:text-sm font-medium text-gray-500">Revenue</p>
+                    <p className="text-lg lg:text-2xl font-semibold text-purple-600">₦{Number(publicStats.totalRevenue).toLocaleString()}</p>
+                  </div>
+                  <div className="p-2 rounded-full bg-purple-50 text-purple-600">
+                    <DollarSign className="h-4 w-4 lg:h-5 lg:w-5" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Public Verification Logs */}
+            {showPublicLogs && (
+              <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+                <div className="p-4 lg:p-6 border-b border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900">Recent Public Verifications</h3>
+                  <p className="text-sm text-gray-600 mt-1">Latest verification attempts from public users</p>
+                </div>
+                
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          User Details
+                        </th>
+                        <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Certificate Info
+                        </th>
+                        <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Date
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {publicVerifications.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="px-4 lg:px-6 py-8 text-center text-gray-500">
+                            No public verifications yet
+                          </td>
+                        </tr>
+                      ) : (
+                        publicVerifications.slice(0, 10).map((verification) => (
+                          <tr key={verification.id} className="hover:bg-gray-50">
+                            <td className="px-4 lg:px-6 py-4">
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">
+                                  {verification.PublicToken?.fullName || 'Anonymous'}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {verification.PublicToken?.email}
+                                </div>
+                                {verification.PublicToken?.organization && (
+                                  <div className="text-xs text-blue-600">
+                                    {verification.PublicToken.organization}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-4 lg:px-6 py-4">
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">
+                                  {verification.certificateNumber}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {verification.certificateType} • {verification.yearOfGraduation}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 lg:px-6 py-4">
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                verification.success 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-red-100 text-red-800'
+                              }`}>
+                                {verification.success ? (
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                ) : (
+                                  <XCircle className="h-3 w-3 mr-1" />
+                                )}
+                                {verification.success ? 'Verified' : 'Not Found'}
+                              </span>
+                            </td>
+                            <td className="px-4 lg:px-6 py-4 text-xs lg:text-sm text-gray-500">
+                              {new Date(verification.createdAt).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                
+                {publicVerifications.length > 10 && (
+                  <div className="p-4 bg-gray-50 text-center">
+                    <button className="text-sm text-teal-600 hover:text-teal-800 font-medium">
+                      View All Public Verifications →
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </>
       )}
