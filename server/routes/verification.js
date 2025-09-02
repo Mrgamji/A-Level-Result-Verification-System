@@ -3,6 +3,16 @@ const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const { Student, Institution, VerificationLog, Credit } = require('../models');
 const { authenticateToken, requireRole, verifyInstitution } = require('../middleware/auth');
+const generateCertificate = require("../utility/generateCertificate");
+const path = require('path');
+const fs = require('fs');
+const csv = require('csv-parser');
+const { v4: uuidv4 } = require('uuid');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/certificates' });
+const csvUpload = upload.single('csv');
+const csvParser = csv({ skipLines: 1 });
+
 
 const router = express.Router();
 
@@ -86,6 +96,7 @@ router.post('/verify', verificationLimiter, authenticateToken, requireRole('inst
         creditsRemaining: totalCredits - 1,
       });
     }
+    const downloadUrl = generateCertificate(student);
 
     res.json({
       message: 'Certificate verified successfully',
@@ -99,6 +110,7 @@ router.post('/verify', verificationLimiter, authenticateToken, requireRole('inst
         yearOfGraduation: student.yearOfGraduation,
         classOfDegree: student.classOfDegree,
         certificateType: student.certificateType,
+        downloadUrl: downloadUrl,
       },
     });
   } catch (error) {
@@ -166,6 +178,7 @@ router.post("/bulk-verify", verificationLimiter, authenticateToken, requireRole(
     let creditsToCreate = [];
 
     for (let reg of trimmedRegNumbers) {
+      const downloadUrl = generateCertificate(student);
       const student = studentMap[reg];
       let result;
       if (student) {
@@ -180,8 +193,7 @@ router.post("/bulk-verify", verificationLimiter, authenticateToken, requireRole(
             certificateType: student.certificateType,
             yearOfEntry: student.yearOfEntry,
             yearOfGraduation: student.yearOfGraduation,
-            // Add downloadUrl if you have fileUrl or similar
-            downloadUrl: student.fileUrl || null,
+            downloadUrl: downloadUrl,
           },
         };
       } else {
