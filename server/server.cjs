@@ -5,12 +5,14 @@ const cors = require('cors');
 const helmet = require('helmet');
 const { sequelize } = require('./models');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 
 // Serve the /uploads folder
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 // Middleware
 app.use(helmet());
@@ -30,7 +32,7 @@ app.use('/api/public', require('./routes/public'));
 // Serve static certificate files
 app.use(
   "/uploads/certificates",
-  express.static(path.join(__dirname, "uploads/certificates"))
+  express.static(path.join(__dirname, "../uploads/certificates"))
 );
 // Health check
 app.get('/api/health', (req, res) => {
@@ -66,5 +68,33 @@ async function startServer() {
     console.error('❌ Unable to start server:', error);
   }
 }
+
+// Force download certificate route
+app.get("/download/certificates/:filename", (req, res) => {
+  const filePath = path.join(
+    __dirname,
+    "../uploads/certificates",
+    req.params.filename
+  );
+
+  // Check if file exists before attempting to download
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      // File does not exist
+      console.error("Certificate not found:", filePath);
+      return res.status(404).json({ error: "Certificate not found" });
+    }
+    // File exists, proceed to download
+    res.download(filePath, req.params.filename, (err) => {
+      if (err) {
+        console.error("Download error:", err);
+        // Only send error if headers not sent
+        if (!res.headersSent) {
+          res.status(500).json({ error: "Error downloading certificate" });
+        }
+      }
+    });
+  });
+});
 
 startServer();

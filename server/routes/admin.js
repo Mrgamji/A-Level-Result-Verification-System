@@ -333,16 +333,18 @@ router.get('/students', authenticateToken, requireRole('admin'), async (req, res
           attributes: ['name'],
         },
       ],
-      order: [['created_at', 'DESC']],
+      order: [['createdAt', 'DESC']],
     });
 
     // Map to shape expected by frontend
     const result = students.map((student) => ({
       id: student.id,
+      certificateNumber: student.certificateNumber,
       fullName: student.fullName,
       yearOfGraduation: student.yearOfGraduation,
       institution: student.Institution ? student.Institution.name : '',
-      uploadDate: student.created_at ? student.created_at.toISOString().slice(0, 10) : '',
+      classOfDegress: student.classOfDegree,
+      uploadDate: student.createdAt ? student.createdAt.toISOString().slice(0, 10) : '',
     }));
 
     res.json(result);

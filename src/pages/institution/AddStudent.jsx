@@ -19,14 +19,18 @@ const AddStudent = () => {
   const navigate = useNavigate();
 
   const certificateTypes = [
-    'Bachelor of Science',
-    'Bachelor of Arts',
-    'Bachelor of Engineering',
-    'Master of Science',
-    'Master of Arts',
-    'Doctor of Philosophy',
-    'Diploma',
-    'Certificate'
+    'IJMB',
+    'JUPEB',
+    'NCE',
+    'OND',
+    'HND',
+    'PGD',
+    'PGDE',
+    'A-Level WAEC (GCE)',
+    'Cambridge A-Level',
+    'NABTEB A-Level',
+    'NBTE (Pre-ND)',
+    'Other Nigerian A-Level Results'
   ];
 
   const handleChange = (e) => {
@@ -144,10 +148,12 @@ const AddStudent = () => {
                 required
               >
                 <option value="">Select class of degree</option>
-                <option value="First Class">First Class</option>
-                <option value="Second Class Upper">Second Class Upper</option>
-                <option value="Second Class Lower">Second Class Lower</option>
-                <option value="Third Class">Third Class</option>
+               
+                <option value="Distinction">Distinction</option>
+                <option value="Upper Credit">Upper Credit</option>
+                <option value="Lower Credit">Lower Credit</option>
+                <option value="Merit">Merit</option>
+                <option value="Credit">Credit</option>
                 <option value="Pass">Pass</option>
               </select>
             </div>

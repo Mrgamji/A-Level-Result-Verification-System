@@ -31,16 +31,28 @@ const BulkVerify = () => {
       header: true,
       skipEmptyLines: true,
       complete: (result) => {
-        if (!result.meta.fields.includes("regNumber")) {
+        if (
+          !result.meta.fields ||
+          !result.meta.fields.map(f => f.trim()).includes("regNumber")
+        ) {
           alert("CSV must have a 'regNumber' column");
+          setRows([]);
+          setResults(null);
           return;
         }
         setRows(
-          result.data.map((row, index) => ({
-            id: index + 1,
-            regNumber: row.regNumber.trim(),
-          }))
+          result.data
+            .filter((row) => row.regNumber && row.regNumber.trim() !== "")
+            .map((row, index) => ({
+              id: index + 1,
+              regNumber: row.regNumber.trim(),
+            }))
         );
+        setResults(null);
+      },
+      error: (err) => {
+        alert("Failed to parse CSV file.");
+        setRows([]);
         setResults(null);
       },
     });
@@ -64,10 +76,22 @@ const BulkVerify = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      setResults(response.data.results);
+      if (
+        response.data &&
+        Array.isArray(response.data.results)
+      ) {
+        setResults(response.data.results);
+      } else {
+        setResults([]);
+        alert("Unexpected response from server.");
+      }
     } catch (error) {
       console.error("Bulk verification error:", error);
-      alert("Bulk verification failed. Try again later.");
+      alert(
+        error?.response?.data?.error ||
+          "Bulk verification failed. Try again later."
+      );
+      setResults([]);
     } finally {
       setLoading(false);
     }
@@ -169,49 +193,57 @@ const BulkVerify = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {results.map((res, idx) => (
-                    <tr key={idx} className="border-t">
-                      <td className="px-4 py-2">{idx + 1}</td>
-                      <td className="px-4 py-2">{res.regNumber}</td>
-                      <td className="px-4 py-2">
-                        {res.success ? (
-                          <span className="flex items-center text-green-700">
-                            <CheckCircle className="h-5 w-5 mr-1" /> Verified
-                          </span>
-                        ) : (
-                          <span className="flex items-center text-red-700">
-                            <XCircle className="h-5 w-5 mr-1" /> Not Found
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-2">
-                        {res.success ? (
-                          <div>
-                            <p className="font-medium">{res.data.fullName}</p>
-                            <p className="text-gray-500 text-xs">
-                              {res.data.institution}
-                            </p>
-                          </div>
-                        ) : (
-                          <span className="text-gray-400 text-sm">N/A</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-2">
-                        {res.success ? (
-                          <a
-                            href={res.data.downloadUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center text-blue-600 hover:underline"
-                          >
-                            <Download className="h-4 w-4 mr-1" /> PDF
-                          </a>
-                        ) : (
-                          "-"
-                        )}
+                  {results.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="text-center py-4 text-gray-500">
+                        No results found.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    results.map((res, idx) => (
+                      <tr key={idx} className="border-t">
+                        <td className="px-4 py-2">{idx + 1}</td>
+                        <td className="px-4 py-2">{res.regNumber}</td>
+                        <td className="px-4 py-2">
+                          {res.success ? (
+                            <span className="flex items-center text-green-700">
+                              <CheckCircle className="h-5 w-5 mr-1" /> Verified
+                            </span>
+                          ) : (
+                            <span className="flex items-center text-red-700">
+                              <XCircle className="h-5 w-5 mr-1" /> Not Found
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-2">
+                          {res.success && res.data ? (
+                            <div>
+                              <p className="font-medium">{res.data.fullName}</p>
+                              <p className="text-gray-500 text-xs">
+                                {res.data.institution}
+                              </p>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 text-sm">N/A</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-2">
+                          {res.success && res.data && res.data.downloadUrl ? (
+                            <a
+                              href={res.data.downloadUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center text-blue-600 hover:underline"
+                            >
+                              <Download className="h-4 w-4 mr-1" /> PDF
+                            </a>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -244,8 +276,16 @@ const BulkVerify = () => {
               <button
                 onClick={handleBulkVerification}
                 className="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition"
+                disabled={loading}
               >
-                Proceed
+                {loading ? (
+                  <>
+                    <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                    Processing...
+                  </>
+                ) : (
+                  "Proceed"
+                )}
               </button>
             </div>
           </div>

@@ -10,22 +10,24 @@ const PublicVerify = () => {
   const [success, setSuccess] = useState('');
 
   // Purchase Token State
-  const [purchaseData, setPurchaseData] = useState({
+  const initialPurchaseData = {
     email: '',
     phoneNumber: '',
     fullName: '',
     organization: '',
     purpose: 'verification'
-  });
+  };
+  const [purchaseData, setPurchaseData] = useState(initialPurchaseData);
   const [purchaseResult, setPurchaseResult] = useState(null);
 
   // Verification State
-  const [verificationData, setVerificationData] = useState({
+  const initialVerificationData = {
     tokenCode: '',
     certificateNumber: '',
     certificateType: '',
     yearOfGraduation: ''
-  });
+  };
+  const [verificationData, setVerificationData] = useState(initialVerificationData);
   const [verificationResult, setVerificationResult] = useState(null);
 
   const certificateTypes = [
@@ -118,6 +120,15 @@ const PublicVerify = () => {
   // Navigation handlers using react-router-dom's useNavigate
   const handleNav = (path) => {
     navigate(path);
+  };
+
+  // Handler to clear purchase data and result when purchasing a new token
+  const handlePurchaseNewToken = () => {
+    setActiveTab('purchase');
+    setPurchaseData(initialPurchaseData);
+    setPurchaseResult(null);
+    setError('');
+    setSuccess('');
   };
 
   return (
@@ -421,7 +432,8 @@ const PublicVerify = () => {
                     </div>
                   )}
 
-                  {verificationResult.tokenUsed && (
+                  {/* Only show the "not found" warning if verification failed and tokenUsed is true */}
+                  {!verificationResult.success && verificationResult.tokenUsed && (
                     <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                       <div className="flex items-center">
                         <AlertTriangle className="h-5 w-5 text-yellow-600 mr-2" />
@@ -436,19 +448,14 @@ const PublicVerify = () => {
                     <button
                       onClick={() => {
                         setVerificationResult(null);
-                        setVerificationData({
-                          tokenCode: '',
-                          certificateNumber: '',
-                          certificateType: '',
-                          yearOfGraduation: ''
-                        });
+                        setVerificationData(initialVerificationData);
                       }}
                       className="bg-gradient-to-r from-green-600 to-blue-600 text-white px-6 py-2 rounded-lg hover:from-green-700 hover:to-blue-700 transition-colors mr-4"
                     >
                       Verify Another
                     </button>
                     <button
-                      onClick={() => setActiveTab('purchase')}
+                      onClick={handlePurchaseNewToken}
                       className="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors"
                     >
                       Purchase New Token

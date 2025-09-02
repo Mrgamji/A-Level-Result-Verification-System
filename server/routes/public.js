@@ -1,8 +1,10 @@
 const express = require('express');
 const crypto = require('crypto');
+const sendMail = require('../utility/mailer');
+const path = require('path');
+const fs = require('fs');
 const { body, validationResult } = require('express-validator');
 const { PublicToken, PublicVerification, Student, Institution } = require('../models');
-const sendMail = require('../utility/mailer');
 
 const router = express.Router();
 
@@ -207,6 +209,66 @@ router.post('/verify-certificate', [
         success: false,
         message: 'Certificate not found or details do not match our records',
         tokenUsed: true
+      });
+    }
+    // Send a customized email to the user with the certificate file attached
+
+    // Import mailer and path utilities
+ 
+
+    // Find the user's email from the token (purchase)
+    let userEmail = token.email || token.purchaserEmail || null;
+
+    // Compose the certificate file path
+    const certFileName = `${student.certificateNumber}.pdf`;
+    const certFilePath = path.join(__dirname, '../../uploads/certificates', certFileName);
+
+    // Check if the certificate file exists before sending
+    if (userEmail && fs.existsSync(certFilePath)) {
+      // Compose a very customized HTML email
+      const html = `
+        <div style="font-family: Arial, sans-serif; color: #222;">
+          <h2 style="color: #006400;">🎉 Congratulations, ${student.fullName}!</h2>
+          <p>
+            Your certificate verification for <b>${student.certificateType}</b> (${student.certificateNumber}) has been <span style="color:green;font-weight:bold;">successfully completed</span>.
+          </p>
+          <ul style="margin: 18px 0 18px 0; padding: 0 0 0 18px;">
+            <li><b>Full Name:</b> ${student.fullName}</li>
+            <li><b>Institution:</b> ${student.Institution.name}</li>
+            <li><b>Department:</b> ${student.department}</li>
+            <li><b>Class of Degree:</b> ${student.classOfDegree}</li>
+            <li><b>Year of Entry:</b> ${student.yearOfEntry}</li>
+            <li><b>Year of Graduation:</b> ${student.yearOfGraduation}</li>
+            <li><b>Certificate Number:</b> ${student.certificateNumber}</li>
+          </ul>
+          <p>
+            <b>Your official verification certificate is attached to this email as a PDF file.</b>
+          </p>
+          <p>
+            <span style="color:#006400;">Thank you for using the Nigerian A-Level Result Verification System.</span><br>
+            <small>
+              If you have any questions, reply to this email or contact our support team.<br>
+              <i>This is an automated message. Please do not reply directly to this email.</i>
+            </small>
+          </p>
+        </div>
+      `;
+
+      // Send the email with attachment
+      sendMail({
+        to: userEmail,
+        subject: `Your Certificate Verification Result - ${student.certificateNumber}`,
+        html,
+        attachments: [
+          {
+            filename: certFileName,
+            path: certFilePath,
+            contentType: 'application/pdf'
+          }
+        ]
+      }).catch(err => {
+        // Log but do not block response
+        console.error('Failed to send verification email:', err);
       });
     }
 

@@ -227,58 +227,61 @@ const Verify = () => {
                   </div>
                 </div>
                 {result.success && result.data && (
-  <div className="bg-white rounded-xl p-6 mt-4 shadow-sm border border-gray-100">
-    <h4 className="font-semibold text-gray-900 mb-4">Certificate Details</h4>
-    <div className="grid md:grid-cols-2 gap-6">
-      <div className="space-y-3">
-        <Detail label="Student Name" value={result.data.fullName} highlight />
-        <Detail label="Institution" value={result.data.institution} />
-        <Detail label="Department/Program" value={result.data.department} />
-      </div>
-      <div className="space-y-3">
-        <Detail label="Class of Degree" value={result.data.classOfDegree} highlight />
-        <Detail
-          label="Certificate Type"
-          value={
-            <span className="bg-green-700 text-white px-3 py-1 rounded-full text-sm">
-              {result.data.certificateType}
-            </span>
-          }
-        />
-        <Detail label="Year of Entry" value={result.data.yearOfEntry} />
-        <Detail label="Year of Graduation" value={result.data.yearOfGraduation} />
-      </div>
-    </div>
+                  <div className="bg-white rounded-xl p-6 mt-4 shadow-sm border border-gray-100">
+                    <h4 className="font-semibold text-gray-900 mb-4">Certificate Details</h4>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <Detail label="Student Name" value={result.data.fullName} highlight />
+                        <Detail label="Institution" value={result.data.institution} />
+                        <Detail label="Department/Program" value={result.data.department} />
+                      </div>
+                      <div className="space-y-3">
+                        <Detail label="Class of Degree" value={result.data.classOfDegree} highlight />
+                        <Detail
+                          label="Certificate Type"
+                          value={
+                            <span className="bg-green-700 text-white px-3 py-1 rounded-full text-sm">
+                              {result.data.certificateType}
+                            </span>
+                          }
+                        />
+                        <Detail label="Year of Entry" value={result.data.yearOfEntry} />
+                        <Detail label="Year of Graduation" value={result.data.yearOfGraduation} />
+                      </div>
+                    </div>
 
-    {/* Download Button */}
-    {result.downloadUrl && (
-      <div className="mt-6">
-        <a
-          href={`http://localhost:10000${result.downloadUrl}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center px-4 py-2 bg-green-700 text-white rounded-xl shadow hover:bg-green-800 transition"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 mr-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
-          </svg>
-          Download Certificate (PDF)
-        </a>
-      </div>
-    )}
+                    {/* ✅ Force Download Button */}
+                    {result.downloadUrl && (
+                      <div className="mt-6">
+                        <a
+                          href={`http://localhost:10000${result.downloadUrl}`}
+                          download
+                          className="inline-flex items-center px-4 py-2 bg-green-700 text-white rounded-xl shadow hover:bg-green-800 transition"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5 mr-2"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"
+                            />
+                          </svg>
+                          Download PDF
+                        </a>
+                      </div>
+                    )}
 
-    <p className="text-xs text-gray-500 mt-6 pt-4 border-t">
-      Verified on {new Date().toLocaleString()}
-    </p>
-  </div>
-)}
-
+                    <p className="text-xs text-gray-500 mt-6 pt-4 border-t">
+                      Verified on {new Date().toLocaleString()}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
