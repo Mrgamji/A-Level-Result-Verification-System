@@ -1,237 +1,170 @@
-const express = require('express');
-const rateLimit = require('express-rate-limit');
-const { body, validationResult } = require('express-validator');
-const { Student, Institution, VerificationLog, Credit } = require('../models');
-const { authenticateToken, requireRole, verifyInstitution } = require('../middleware/auth');
-const generateCertificate = require("../utility/generateCertificate");
-const path = require('path');
-const fs = require('fs');
-const csv = require('csv-parser');
-const { v4: uuidv4 } = require('uuid');
-const multer = require('multer');
-const upload = multer({ dest: 'uploads/certificates' });
-const csvUpload = upload.single('csv');
-const csvParser = csv({ skipLines: 1 });
-
-
+const express = require("express");
 const router = express.Router();
+const multer = require("multer");
+const csv = require("csv-parser");
+const fs = require("fs");
+const path = require("path");
 
-// Rate limiting for verification endpoint
-const verificationLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 50, // limit each IP to 50 requests per windowMs
-  message: 'Too many verification requests, please try again later',
-});
+const { Student, Institution, VerificationLog, User } = require("../models");
+const generateCertificate = require("../../src/utils/generateCertificate");
 
-// Verify certificate
-router.post('/verify', verificationLimiter, authenticateToken, requireRole('institution'), [
-  body('certificateNumber').trim().notEmpty().withMessage('Certificate number is required'),
-], async (req, res) => {
+// --- File Upload Setup for Bulk Verify ---
+const upload = multer({ dest: "uploads/" });
+
+// ✅ Normalize student fields for PDF
+function normalizeStudent(student) {
+  return {
+    regNumber: student.certificateNumber,
+    name: student.fullName,
+    course: student.department || "N/A",
+    institution: student.Institution ? student.Institution.name : "Unknown Institution",
+  };
+}
+
+// ===================
+// Single Verification
+// ===================
+router.post("/verify", async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+    const { regNumber, userId } = req.body;
+
+    // Get user
+    const user = await User.findByPk(userId);
+    if (!user || user.credits < 1) {
+      return res.status(403).json({ message: "Not enough credits", success: false });
     }
 
-    const { certificateNumber } = req.body;
-    const ipAddress = req.ip || req.connection.remoteAddress;
-    
-    // Find institution
-    const institution = await Institution.findOne({ where: { userId: req.user.id } });
-    if (!institution) {
-      return res.status(404).json({ error: 'Institution not found' });
-    }
-
-    // Check if institution has credits
-    const credits = await Credit.findAll({
-      where: { institutionId: institution.id },
-    });
-
-    let totalCredits = 0;
-    credits.forEach(credit => {
-      if (credit.transactionType === 'purchase') {
-        totalCredits += credit.transactionAmount;
-      } else if (credit.transactionType === 'usage') {
-        totalCredits -= credit.transactionAmount;
-      }
-    });
-
-    if (totalCredits <= 0) {
-      return res.status(402).json({
-        error: 'Insufficient credits',
-        message: 'You need to purchase credits to verify certificates',
-        code: 'INSUFFICIENT_CREDITS'
-      });
-    }
-
-    // Find student with certificate number
+    // Find student
     const student = await Student.findOne({
-      where: { certificateNumber },
+      where: { certificateNumber: regNumber },
       include: [{ model: Institution }],
-    });
-
-    // Deduct credit for verification attempt
-    await Credit.create({
-      institutionId: institution.id,
-      amount: totalCredits - 1,
-      transactionType: 'usage',
-      transactionAmount: 1,
-      description: `Certificate verification: ${certificateNumber}`,
-      reference: `VER-${Date.now()}`,
-    });
-
-    // Log verification attempt
-    await VerificationLog.create({
-      institutionId: institution.id,
-      amount: 200, // Cost per verification
-      certificateNumber,
-      ipAddress,
-      success: !!student,
     });
 
     if (!student) {
       return res.status(404).json({
-        message: 'Certificate Not Found or Not Verified',
+        message: "Certificate Not Found or Not Verified",
         success: false,
-        creditsRemaining: totalCredits - 1,
+        creditsRemaining: user.credits - 1,
       });
     }
-    const downloadUrl = generateCertificate(student);
+
+    // Deduct credit
+    user.credits -= 1;
+    await user.save();
+
+    // Log verification
+    await VerificationLog.create({
+      userId: user.id,
+      studentId: student.id,
+      institutionId: student.institutionId,
+    });
+
+    // Generate certificate
+    const downloadUrl = generateCertificate(normalizeStudent(student));
 
     res.json({
-      message: 'Certificate verified successfully',
       success: true,
-      creditsRemaining: totalCredits - 1,
-      data: {
-        fullName: student.fullName,
+      message: "Certificate verified successfully",
+      student: {
+        regNumber: student.certificateNumber,
+        name: student.fullName,
+        course: student.department,
         institution: student.Institution.name,
-        department: student.department,
-        yearOfEntry: student.yearOfEntry,
-        yearOfGraduation: student.yearOfGraduation,
-        classOfDegree: student.classOfDegree,
-        certificateType: student.certificateType,
-        downloadUrl: downloadUrl,
       },
+      downloadUrl,
+      creditsRemaining: user.credits,
     });
   } catch (error) {
-    console.error('Error verifying certificate:', error);
-    res.status(500).json({ error: 'Server error' });
+    console.error("Verification Error:", error);
+    res.status(500).json({ message: "Internal Server Error", success: false });
   }
 });
 
-// Improved Bulk Verification Endpoint
-router.post("/bulk-verify", verificationLimiter, authenticateToken, requireRole('institution'), [
-  body('regNumbers').isArray({ min: 1 }).withMessage('regNumbers must be a non-empty array'),
-], async (req, res) => {
+// ===================
+// Bulk Verification
+// ===================
+router.post("/bulk-verify", upload.single("file"), async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+    const { userId } = req.body;
+
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found", success: false });
     }
 
-    const { regNumbers } = req.body;
-    const ipAddress = req.ip || req.connection.remoteAddress;
+    const filePath = req.file.path;
+    const regNumbers = [];
 
-    // Find institution
-    const institution = await Institution.findOne({ where: { userId: req.user.id } });
-    if (!institution) {
-      return res.status(404).json({ error: 'Institution not found' });
-    }
-
-    // Calculate available credits
-    const credits = await Credit.findAll({
-      where: { institutionId: institution.id },
+    // Read CSV
+    await new Promise((resolve, reject) => {
+      fs.createReadStream(filePath)
+        .pipe(csv())
+        .on("data", (row) => {
+          if (row.regNumber) regNumbers.push(row.regNumber.trim());
+        })
+        .on("end", resolve)
+        .on("error", reject);
     });
 
-    let totalCredits = 0;
-    credits.forEach(credit => {
-      if (credit.transactionType === 'purchase') {
-        totalCredits += credit.transactionAmount;
-      } else if (credit.transactionType === 'usage') {
-        totalCredits -= credit.transactionAmount;
-      }
-    });
-
-    if (totalCredits < regNumbers.length) {
-      return res.status(402).json({
-        error: 'Insufficient credits',
-        message: `You need ${regNumbers.length} credits, but you have ${totalCredits}`,
-        code: 'INSUFFICIENT_CREDITS'
-      });
-    }
-
-    // Fetch all students in one query for efficiency
-    const trimmedRegNumbers = regNumbers.map(r => r.trim());
+    // Find students
     const students = await Student.findAll({
-      where: { certificateNumber: trimmedRegNumbers },
+      where: { certificateNumber: regNumbers },
       include: [{ model: Institution }],
     });
 
-    // Map for quick lookup
     const studentMap = {};
-    students.forEach(student => {
+    students.forEach((student) => {
       studentMap[student.certificateNumber] = student;
     });
 
-    let results = [];
-    let logs = [];
-    let creditsToCreate = [];
-
-    for (let reg of trimmedRegNumbers) {
-      const downloadUrl = generateCertificate(student);
+    const results = [];
+    for (let reg of regNumbers) {
       const student = studentMap[reg];
-      let result;
+
       if (student) {
-        result = {
+        // Deduct credit per student
+        if (user.credits < 1) {
+          results.push({ regNumber: reg, status: "Failed - Not enough credits" });
+          continue;
+        }
+
+        user.credits -= 1;
+        await user.save();
+
+        // Log verification
+        await VerificationLog.create({
+          userId: user.id,
+          studentId: student.id,
+          institutionId: student.institutionId,
+        });
+
+        // Generate certificate
+        const downloadUrl = generateCertificate(normalizeStudent(student));
+
+        results.push({
           regNumber: reg,
-          success: true,
-          data: {
-            fullName: student.fullName,
-            institution: student.Institution ? student.Institution.name : null,
-            department: student.department,
-            classOfDegree: student.classOfDegree,
-            certificateType: student.certificateType,
-            yearOfEntry: student.yearOfEntry,
-            yearOfGraduation: student.yearOfGraduation,
-            downloadUrl: downloadUrl,
-          },
-        };
+          status: "Verified",
+          name: student.fullName,
+          course: student.department,
+          institution: student.Institution.name,
+          downloadUrl,
+        });
       } else {
-        result = {
-          regNumber: reg,
-          success: false,
-          message: "Certificate not found",
-        };
+        results.push({ regNumber: reg, status: "Certificate Not Found" });
       }
-      results.push(result);
-
-      // Prepare credit deduction and log for each attempt
-      creditsToCreate.push({
-        institutionId: institution.id,
-        amount: --totalCredits,
-        transactionType: 'usage',
-        transactionAmount: 1,
-        description: `Bulk certificate verification: ${reg}`,
-        reference: `BULK-VER-${Date.now()}-${reg}`,
-      });
-
-      logs.push({
-        institutionId: institution.id,
-        amount: 200, // Cost per verification
-        certificateNumber: reg,
-        ipAddress,
-        success: !!student,
-      });
     }
 
-    // Bulk create credits and logs
-    await Credit.bulkCreate(creditsToCreate);
-    await VerificationLog.bulkCreate(logs);
+    // Delete uploaded CSV
+    fs.unlinkSync(filePath);
 
-    return res.json({ results, creditsRemaining: totalCredits });
-  } catch (err) {
-    console.error('Error during bulk verification:', err);
-    return res.status(500).json({ message: "Server error during bulk verification" });
+    res.json({
+      success: true,
+      results,
+      creditsRemaining: user.credits,
+    });
+  } catch (error) {
+    console.error("Bulk Verification Error:", error);
+    res.status(500).json({ message: "Internal Server Error", success: false });
   }
 });
 

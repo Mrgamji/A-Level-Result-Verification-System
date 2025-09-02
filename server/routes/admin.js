@@ -108,7 +108,7 @@ router.get('/public-verifications', authenticateToken, requireRole('admin'), asy
         model: PublicToken,
         attributes: ['tokenCode', 'email', 'fullName', 'organization', 'purpose']
       }],
-      order: [['createdAt', 'DESC']],
+      order: [['created_at', 'DESC']],
       limit: 100
     });
 
@@ -333,7 +333,7 @@ router.get('/students', authenticateToken, requireRole('admin'), async (req, res
           attributes: ['name'],
         },
       ],
-      order: [['createdAt', 'DESC']],
+      order: [['created_at', 'DESC']],
     });
 
     // Map to shape expected by frontend
@@ -342,7 +342,7 @@ router.get('/students', authenticateToken, requireRole('admin'), async (req, res
       fullName: student.fullName,
       yearOfGraduation: student.yearOfGraduation,
       institution: student.Institution ? student.Institution.name : '',
-      uploadDate: student.createdAt ? student.createdAt.toISOString().slice(0, 10) : '',
+      uploadDate: student.created_at ? student.created_at.toISOString().slice(0, 10) : '',
     }));
 
     res.json(result);
@@ -357,7 +357,7 @@ router.get('/institutions', authenticateToken, requireRole('admin'), async (req,
   try {
     const institutions = await Institution.findAll({
       include: [{ model: User, attributes: ['email'] }],
-      order: [['createdAt', 'DESC']],
+      order: [['created_at', 'DESC']],
     });
 
     res.json(institutions);
