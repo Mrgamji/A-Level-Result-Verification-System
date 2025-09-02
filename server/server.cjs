@@ -1,3 +1,4 @@
+// server.cjs
 const express = require('express');
 require('dotenv').config();
 const cors = require('cors');
@@ -26,90 +27,19 @@ app.use('/api/payments', require('./routes/payments'));
 app.use('/api/announcements', require('./routes/announcements'));
 app.use('/api/public', require('./routes/public'));
 
-// Remove force: true sync (no more dropping tables)
-// Instead, check if the database exists, then skip sync if it does
-const { Sequelize } = require('sequelize');
-
-async function databaseExists(sequelizeInstance) {
-  // This function assumes a Postgres or MySQL database
-  // For SQLite, the file existence is enough
-  const config = sequelizeInstance.config;
-  let dbName = config.database;
-  let dialect = config.dialect;
-
-  if (dialect === 'sqlite') {
-    // For SQLite, check if file exists
-    const fs = require('fs');
-    if (dbName === ':memory:') return false;
-    return fs.existsSync(dbName);
-  } else if (dialect === 'postgres') {
-    // For Postgres, connect to default db and check
-    const { username, password, host, port } = config;
-    const defaultDb = 'postgres';
-    const tempSequelize = new Sequelize(defaultDb, username, password, {
-      host,
-      port,
-      dialect: 'postgres',
-      logging: false,
-    });
-    try {
-      const [results] = await tempSequelize.query(
-        `SELECT 1 FROM pg_database WHERE datname = '${dbName}'`
-      );
-      await tempSequelize.close();
-      return results.length > 0;
-    } catch (err) {
-      await tempSequelize.close();
-      return false;
-    }
-  } else if (dialect === 'mysql' || dialect === 'mariadb') {
-    // For MySQL/MariaDB, connect to default db and check
-    const { username, password, host, port } = config;
-    const defaultDb = 'mysql';
-    const tempSequelize = new Sequelize(defaultDb, username, password, {
-      host,
-      port,
-      dialect,
-      logging: false,
-    });
-    try {
-      const [results] = await tempSequelize.query(
-        `SHOW DATABASES LIKE '${dbName}'`
-      );
-      await tempSequelize.close();
-      return results.length > 0;
-    } catch (err) {
-      await tempSequelize.close();
-      return false;
-    }
-  }
-  // Default: assume not exists
-  return false;
-}
-
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// Initialize database and start server
+// Initialize database connection and start server
 async function startServer() {
   try {
-    let skipSync = false;
-    try {
-      skipSync = await databaseExists(sequelize);
-    } catch (err) {
-      console.error('Error checking database existence:', err);
-    }
+    // Just authenticate the connection — no sync to avoid dropping/altering data
+    await sequelize.authenticate();
+    console.log('Database connection established successfully.');
 
-    if (skipSync) {
-      console.log('Database already exists, skipping sync.');
-    } else {
-      await sequelize.sync({ force: false });
-      console.log('Database synced (created new tables).');
-    }
-
-    // Optional: Create admin user if not exists
+    // Optional: Ensure at least one admin exists (only creates if not already there)
     const { User } = require('./models');
     const bcrypt = require('bcryptjs');
 
@@ -125,10 +55,10 @@ async function startServer() {
     }
 
     app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+      console.log(`🚀 Server running on port ${PORT}`);
     });
   } catch (error) {
-    console.error('Unable to start server:', error);
+    console.error('❌ Unable to start server:', error);
   }
 }
 

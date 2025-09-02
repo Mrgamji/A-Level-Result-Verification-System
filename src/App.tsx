@@ -22,6 +22,9 @@ import Announcements from './pages/admin/Announcements';
 import Feedback from './pages/admin/Feedback';
 import InstitutionFeedback from './pages/institution/Feedback';
 import PublicVerify from './pages/PublicVerify';
+import BulkVerify from "./pages/BulkVerify";
+
+
 
 function App() {
   return (
@@ -30,6 +33,7 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Layout><Home /></Layout>} />
+          
           <Route path="/verify" element={<Layout><Verify /></Layout>} />
           <Route path="/institution/activate" element={<Layout><InstitutionActivation /></Layout>} />
           <Route path="/login" element={<Layout><Login /></Layout>} />
@@ -56,6 +60,18 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+<Route
+            path="/bulk-verification"
+            element={
+              <ProtectedRoute role="institution">
+                <DashboardLayout>
+                  <BulkVerify />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/admin/students"
             element={
