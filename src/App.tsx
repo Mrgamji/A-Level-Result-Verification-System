@@ -22,6 +22,7 @@ import Announcements from './pages/admin/Announcements';
 import Feedback from './pages/admin/Feedback';
 import InstitutionFeedback from './pages/institution/Feedback';
 import PublicVerify from './pages/PublicVerify';
+import BulkVerification from './pages/institution/BulkVerification';
 import BulkVerify from "./pages/BulkVerify";
 
 
@@ -160,6 +161,16 @@ function App() {
               <ProtectedRoute role="institution">
                 <DashboardLayout>
                   <InstitutionFeedback />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/institution/bulk-verification"
+            element={
+              <ProtectedRoute role="institution">
+                <DashboardLayout>
+                  <BulkVerification />
                 </DashboardLayout>
               </ProtectedRoute>
             }

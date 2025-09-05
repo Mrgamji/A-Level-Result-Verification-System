@@ -39,6 +39,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, onMobileClose }) => {
     { name: 'Students', href: '/institution/students', icon: Users },
     { name: 'Add Student', href: '/institution/add-student', icon: Plus },
     { name: 'Verify Certificate', href: '/verify', icon: Search },
+    { name: 'Bulk Verification', href: '/institution/bulk-verification', icon: FileText },
     { name: 'Credits & Payments', href: '/institution/credits', icon: CreditCard },
     { name: 'Feedback & Complaints', href: '/institution/feedback', icon: MessageSquare },
     { name: 'Settings', href: '/institution/settings', icon: Settings },

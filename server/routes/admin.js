@@ -5,6 +5,7 @@ const sendMail = require('../utility/mailer');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const { User, Institution, Student, VerificationLog } = require('../models');
+const { PublicVerification, PublicToken } = require('../models');
 const { authenticateToken, requireRole, JWT_SECRET } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
 const db = require('../config/database');

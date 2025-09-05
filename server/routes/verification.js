@@ -1,16 +1,37 @@
 const express = require("express");
-const router = express.Router();
+const rateLimit = require("express-rate-limit");
 const multer = require("multer");
 const csv = require("csv-parser");
 const fs = require("fs");
+const PDFDocument = require("pdfkit");
 const path = require("path");
 
 const { Student, Institution, VerificationLog } = require("../models");
 const generateCertificate = require("../../src/utils/generateCertificate");
 const { authenticateToken } = require("../middleware/auth");
 
-// --- File Upload Setup for Bulk Verify ---
-const upload = multer({ dest: "uploads/" });
+// Configure multer for CSV uploads
+const upload = multer({
+  dest: "uploads/",
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "text/csv") {
+      cb(null, true);
+    } else {
+      cb(new Error("Only CSV files are allowed"), false);
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+});
+
+// Rate limiting for verification endpoint
+const verificationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+});
+
+const router = express.Router();
 
 // ✅ Normalize student fields for PDF
 function normalizeStudent(student) {
@@ -98,120 +119,249 @@ router.post("/verify", authenticateToken, async (req, res) => {
   }
 });
 
-// ===================
-// Bulk Verification
-// ===================
-router.post("/bulk-verify", authenticateToken, upload.single("file"), async (req, res) => {
+// Bulk verification endpoint
+router.post('/bulk-verify', verificationLimiter, authenticateToken, requireRole('institution'), upload.single('csv'), async (req, res) => {
   try {
-    const user = req.user; // ✅ from JWT middleware
-
     if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded", success: false });
+      return res.status(400).json({ error: 'CSV file is required' });
     }
 
-    const filePath = req.file.path;
-    const regNumbers = [];
-
-    // Read CSV
-    await new Promise((resolve, reject) => {
-      fs.createReadStream(filePath)
-        .pipe(csv())
-        .on("data", (row) => {
-          if (row.regNumber) regNumbers.push(row.regNumber.trim());
-        })
-        .on("end", resolve)
-        .on("error", reject);
-    });
-
-    // If no regNumbers found
-    if (regNumbers.length === 0) {
-      fs.unlinkSync(filePath);
-      return res.status(400).json({ message: "No registration numbers found in file", success: false });
+    const institution = await Institution.findOne({ where: { userId: req.user.id } });
+    if (!institution) {
+      return res.status(404).json({ error: 'Institution not found' });
     }
 
-    // Check credits
-    if (user.credits < regNumbers.length) {
-      fs.unlinkSync(filePath);
-      return res.status(403).json({
-        message: `Not enough credits. You have ${user.credits} but tried to verify ${regNumbers.length} certificates.`,
-        success: false,
-        creditsRemaining: user.credits,
-      });
-    }
-
-    // Find students
-    const students = await Student.findAll({
-      where: { certificateNumber: regNumbers },
-      include: [{ model: Institution }],
-    });
-
-    const studentMap = {};
-    students.forEach((student) => {
-      studentMap[student.certificateNumber] = student;
-    });
-
+    const ipAddress = req.ip || req.connection.remoteAddress;
     const results = [];
-    for (let reg of regNumbers) {
-      const student = studentMap[reg];
+    const errors = [];
 
-      if (student) {
-        // Deduct credit
-        if (user.credits < 1) {
-          results.push({
-            regNumber: reg,
-            success: false,
-            message: "Not enough credits",
-            data: null,
+    // Parse CSV file
+    const csvData = [];
+    
+    return new Promise((resolve, reject) => {
+      fs.createReadStream(req.file.path)
+        .pipe(csv())
+        .on('data', (data) => {
+          // Validate required fields
+          const requiredFields = ['certificateNumber', 'certificateType', 'yearOfGraduation'];
+          const missingFields = requiredFields.filter(field => !data[field]);
+          
+          if (missingFields.length > 0) {
+            errors.push(`Row missing fields: ${missingFields.join(', ')}`);
+            return;
+          }
+
+          csvData.push({
+            certificateNumber: data.certificateNumber.trim(),
+            certificateType: data.certificateType.trim(),
+            yearOfGraduation: parseInt(data.yearOfGraduation)
           });
-          continue;
-        }
+        })
+        .on('end', async () => {
+          try {
+            // Clean up uploaded file
+            fs.unlinkSync(req.file.path);
 
-        user.credits -= 1;
-        await user.save();
+            if (errors.length > 0) {
+              return res.status(400).json({ errors });
+            }
 
-        // Log verification
-        await VerificationLog.create({
-          userId: user.id,
-          studentId: student.id,
-          institutionId: student.institutionId,
-          certificateNumber: student.certificateNumber,   // ✅ use regNumber or actual cert no
-          ipAddress: req.ip || req.connection.remoteAddress, // ✅ capture requester IP
+            if (csvData.length === 0) {
+              return res.status(400).json({ error: 'No valid data found in CSV' });
+            }
+
+            if (csvData.length > 1000) {
+              return res.status(400).json({ error: 'Maximum 1000 certificates allowed per upload' });
+            }
+
+            // Check credits
+            const credits = await Credit.findAll({
+              where: { institutionId: institution.id },
+            });
+
+            let totalCredits = 0;
+            credits.forEach(credit => {
+              if (credit.transactionType === 'purchase') {
+                totalCredits += credit.transactionAmount;
+              } else if (credit.transactionType === 'usage') {
+                totalCredits -= credit.transactionAmount;
+              }
+            });
+
+            if (totalCredits < csvData.length) {
+              return res.status(402).json({
+                error: 'Insufficient credits',
+                message: `You need ${csvData.length} credits but only have ${totalCredits}`,
+                required: csvData.length,
+                available: totalCredits
+              });
+            }
+
+            // Process each certificate
+            for (const item of csvData) {
+              try {
+                const student = await Student.findOne({
+                  where: {
+                    certificateNumber: item.certificateNumber,
+                    certificateType: item.certificateType,
+                    yearOfGraduation: item.yearOfGraduation
+                  },
+                  include: [{ model: Institution }]
+                });
+
+                // Log verification attempt
+                await VerificationLog.create({
+                  institutionId: institution.id,
+                  amount: 200,
+                  certificateNumber: item.certificateNumber,
+                  ipAddress,
+                  success: !!student,
+                });
+
+                results.push({
+                  certificateNumber: item.certificateNumber,
+                  certificateType: item.certificateType,
+                  yearOfGraduation: item.yearOfGraduation,
+                  verified: !!student,
+                  studentName: student ? student.fullName : null,
+                  institution: student ? student.Institution.name : null,
+                  department: student ? student.department : null,
+                  classOfDegree: student ? student.classOfDegree : null,
+                  yearOfEntry: student ? student.yearOfEntry : null,
+                  error: student ? null : 'Certificate not found'
+                });
+
+              } catch (error) {
+                console.error('Error verifying certificate:', error);
+                results.push({
+                  certificateNumber: item.certificateNumber,
+                  certificateType: item.certificateType,
+                  yearOfGraduation: item.yearOfGraduation,
+                  verified: false,
+                  error: 'Verification error'
+                });
+              }
+            }
+
+            // Deduct credits
+            await Credit.create({
+              institutionId: institution.id,
+              amount: totalCredits - csvData.length,
+              transactionType: 'usage',
+              transactionAmount: csvData.length,
+              description: `Bulk verification: ${csvData.length} certificates`,
+              reference: `BULK-${Date.now()}`,
+            });
+
+            const summary = {
+              total: results.length,
+              verified: results.filter(r => r.verified).length,
+              failed: results.filter(r => !r.verified).length,
+              creditsUsed: csvData.length,
+              creditsRemaining: totalCredits - csvData.length
+            };
+
+            res.json({
+              success: true,
+              message: `Bulk verification completed. ${summary.verified} of ${summary.total} certificates verified.`,
+              results,
+              summary
+            });
+
+          } catch (error) {
+            console.error('Bulk verification error:', error);
+            res.status(500).json({ error: 'Bulk verification failed' });
+          }
+        })
+        .on('error', (error) => {
+          console.error('CSV parsing error:', error);
+          res.status(400).json({ error: 'Invalid CSV file format' });
         });
+    });
 
-        // Generate certificate
-        const downloadUrl = await generateCertificate(normalizeStudent(student));
+  } catch (error) {
+    console.error('Bulk verification error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
-        results.push({
-          regNumber: reg,
-          success: true,
-          message: "Verified",
-          data: {
-            fullName: student.fullName,
-            institution: student.Institution.name,
-            downloadUrl,
-          },
-        });
-      } else {
-        results.push({
-          regNumber: reg,
-          success: false,
-          message: "Certificate Not Found",
-          data: null,
-        });
-      }
+// Download verification report as PDF
+router.post('/download-report', authenticateToken, requireRole('institution'), async (req, res) => {
+  try {
+    const { results } = req.body;
+    
+    if (!results || results.length === 0) {
+      return res.status(400).json({ error: 'No results to generate report' });
     }
 
-    // Delete uploaded CSV
-    fs.unlinkSync(filePath);
+    const institution = await Institution.findOne({ where: { userId: req.user.id } });
+    if (!institution) {
+      return res.status(404).json({ error: 'Institution not found' });
+    }
 
-    res.json({
-      success: true,
-      results,
-      creditsRemaining: user.credits,
+    // Create PDF document
+    const doc = new PDFDocument({ margin: 50 });
+    
+    // Set response headers
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=verification-report-${Date.now()}.pdf`);
+    
+    // Pipe PDF to response
+    doc.pipe(res);
+
+    // Header
+    doc.fontSize(20).text('A-Level Certificate Verification Report', { align: 'center' });
+    doc.moveDown();
+    
+    // Institution info
+    doc.fontSize(12)
+       .text(`Institution: ${institution.name}`)
+       .text(`Generated: ${new Date().toLocaleString()}`)
+       .text(`Total Certificates: ${results.length}`)
+       .text(`Verified: ${results.filter(r => r.verified).length}`)
+       .text(`Failed: ${results.filter(r => !r.verified).length}`);
+    
+    doc.moveDown();
+    
+    // Table header
+    const startY = doc.y;
+    doc.fontSize(10)
+       .text('Certificate Number', 50, startY, { width: 120 })
+       .text('Type', 170, startY, { width: 80 })
+       .text('Year', 250, startY, { width: 50 })
+       .text('Status', 300, startY, { width: 60 })
+       .text('Student Name', 360, startY, { width: 150 });
+    
+    doc.moveTo(50, doc.y + 5).lineTo(550, doc.y + 5).stroke();
+    doc.moveDown(0.5);
+
+    // Table rows
+    results.forEach((result, index) => {
+      if (doc.y > 700) { // New page if needed
+        doc.addPage();
+        doc.y = 50;
+      }
+      
+      const y = doc.y;
+      doc.fontSize(9)
+         .text(result.certificateNumber || '', 50, y, { width: 120 })
+         .text(result.certificateType || '', 170, y, { width: 80 })
+         .text(result.yearOfGraduation?.toString() || '', 250, y, { width: 50 })
+         .text(result.verified ? 'Verified' : 'Failed', 300, y, { width: 60 })
+         .text(result.studentName || 'N/A', 360, y, { width: 150 });
+      
+      doc.moveDown(0.3);
     });
+
+    // Footer
+    doc.fontSize(8)
+       .text('Generated by A-Level Certificate Verification System', 50, doc.page.height - 50, { align: 'center' });
+
+    doc.end();
+
   } catch (error) {
-    console.error("Bulk Verification Error:", error);
-    res.status(500).json({ message: "Internal Server Error", success: false });
+    console.error('PDF generation error:', error);
+    res.status(500).json({ error: 'Failed to generate PDF report' });
   }
 });
 
