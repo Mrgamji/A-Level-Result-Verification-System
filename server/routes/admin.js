@@ -9,7 +9,6 @@ const { PublicVerification, PublicToken } = require('../models');
 const { authenticateToken, requireRole, JWT_SECRET } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
 const db = require('../config/database');
-const { PublicVerification, PublicToken } = require('../models');
 
 // Get verifications by institution (SQLite compatible)
 router.get('/chart/verifications-by-institution', authenticateToken, requireRole('admin'), async (req, res) => {

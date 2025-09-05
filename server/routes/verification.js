@@ -8,7 +8,7 @@ const path = require("path");
 
 const { Student, Institution, VerificationLog } = require("../models");
 const generateCertificate = require("../../src/utils/generateCertificate");
-const { authenticateToken } = require("../middleware/auth");
+const { authenticateToken, requireRole } = require("../middleware/auth");
 
 // Configure multer for CSV uploads
 const upload = multer({
