@@ -75,7 +75,7 @@ router.get('/chart/verifications-over-time', authenticateToken, requireRole('adm
 
     const results = await VerificationLog.findAll({
       attributes: [
-        [fn('date', col('created_at')), 'date'],
+        [fn('date', col('createdAt')), 'date'],
         [fn('COUNT', col('id')), 'count']
       ],
       where: {
@@ -83,8 +83,8 @@ router.get('/chart/verifications-over-time', authenticateToken, requireRole('adm
           [Op.gte]: thirtyDaysAgo
         }
       },
-      group: [fn('date', col('created_at'))],
-      order: [[fn('date', col('created_at')), 'ASC']],
+      group: [fn('date', col('createdAt'))],
+      order: [[fn('date', col('createdAt')), 'ASC']],
       raw: true
     });
 
@@ -108,7 +108,7 @@ router.get('/public-verifications', authenticateToken, requireRole('admin'), asy
         model: PublicToken,
         attributes: ['tokenCode', 'email', 'fullName', 'organization', 'purpose']
       }],
-      order: [['created_at', 'DESC']],
+      order: [['createdAt', 'DESC']],
       limit: 100
     });
 
@@ -359,7 +359,7 @@ router.get('/institutions', authenticateToken, requireRole('admin'), async (req,
   try {
     const institutions = await Institution.findAll({
       include: [{ model: User, attributes: ['email'] }],
-      order: [['created_at', 'DESC']],
+      order: [['createdAt', 'DESC']],
     });
 
     res.json(institutions);
