@@ -93,7 +93,7 @@ const BulkVerification = () => {
     setSuccess('');
 
     const formData = new FormData();
-    formData.append('csv', file);
+    formData.append('file', file);
 
     try {
       const response = await api.post('/verification/bulk-verify', formData, {

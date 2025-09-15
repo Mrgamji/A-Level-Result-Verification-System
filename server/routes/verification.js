@@ -6,7 +6,7 @@ const fs = require("fs");
 const PDFDocument = require("pdfkit");
 const path = require("path");
 
-const { Student, Institution, VerificationLog } = require("../models");
+const { Student, Institution, VerificationLog, Credit } = require("../models");
 const generateCertificate = require("../../src/utils/generateCertificate");
 const { authenticateToken, requireRole } = require("../middleware/auth");
 
@@ -14,15 +14,20 @@ const { authenticateToken, requireRole } = require("../middleware/auth");
 const upload = multer({
   dest: "uploads/",
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === "text/csv") {
+    const allowedMimes = [
+      "text/csv",
+      "application/vnd.ms-excel",
+      "application/csv",
+      "text/plain",
+    ];
+
+    if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
       cb(new Error("Only CSV files are allowed"), false);
     }
   },
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-  },
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
 });
 
 // Rate limiting for verification endpoint
@@ -120,14 +125,20 @@ router.post("/verify", authenticateToken, async (req, res) => {
 });
 
 // Bulk verification endpoint
-router.post('/bulk-verify', verificationLimiter, authenticateToken, requireRole('institution'), upload.single('csv'), async (req, res) => {
+router.post('/bulk-verify', verificationLimiter, authenticateToken, requireRole('institution'), upload.single('file'), async (req, res) => {
+  let filePath = null;
+  
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'CSV file is required' });
     }
+    
+    filePath = req.file.path; // Store for cleanup
 
     const institution = await Institution.findOne({ where: { userId: req.user.id } });
     if (!institution) {
+      // Clean up file
+      fs.unlinkSync(filePath);
       return res.status(404).json({ error: 'Institution not found' });
     }
 
@@ -139,7 +150,7 @@ router.post('/bulk-verify', verificationLimiter, authenticateToken, requireRole(
     const csvData = [];
     
     return new Promise((resolve, reject) => {
-      fs.createReadStream(req.file.path)
+      fs.createReadStream(filePath)
         .pipe(csv())
         .on('data', (data) => {
           // Validate required fields
@@ -160,10 +171,13 @@ router.post('/bulk-verify', verificationLimiter, authenticateToken, requireRole(
         .on('end', async () => {
           try {
             // Clean up uploaded file
-            fs.unlinkSync(req.file.path);
+            fs.unlinkSync(filePath);
 
             if (errors.length > 0) {
-              return res.status(400).json({ errors });
+              return res.status(400).json({ 
+                error: 'CSV validation failed',
+                details: errors 
+              });
             }
 
             if (csvData.length === 0) {
@@ -275,12 +289,20 @@ router.post('/bulk-verify', verificationLimiter, authenticateToken, requireRole(
         })
         .on('error', (error) => {
           console.error('CSV parsing error:', error);
+          // Clean up file on error
+          if (filePath) {
+            fs.unlinkSync(filePath);
+          }
           res.status(400).json({ error: 'Invalid CSV file format' });
         });
     });
 
   } catch (error) {
     console.error('Bulk verification error:', error);
+    // Clean up file on error
+    if (filePath) {
+      fs.unlinkSync(filePath);
+    }
     res.status(500).json({ error: 'Server error' });
   }
 });

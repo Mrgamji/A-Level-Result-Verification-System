@@ -323,7 +323,7 @@ const Verify = () => {
               Need to verify many certificates at once? Use our bulk verification tool to upload a list and get instant results.
             </p>
             <button
-              onClick={() => navigate('/bulk-verification')}
+              onClick={() => navigate('/institution/bulk-verification')}
               className="bg-white text-blue-700 font-semibold px-6 py-3 rounded-lg shadow hover:bg-blue-50 flex items-center gap-2 transition"
             >
               <Users className="h-5 w-5" />
