@@ -15,7 +15,8 @@ import {
   Globe,
   CreditCard,
   Eye,
-  Search
+  Search,
+  XCircle
 } from 'lucide-react';
 import {
   LineChart,
@@ -30,7 +31,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
 } from 'recharts';
 import { useFirstLogin } from '../../hooks/useFirstLogin';
 import PasswordChangeModal from '../../components/PasswordChangeModal';
@@ -132,8 +133,9 @@ const Dashboard = () => {
 
   const fetchPublicStats = async () => {
     try {
-      const response = await api.get('/public/stats');
-      setPublicStats(response.data);
+      const response = await api.get('/admin/stats');
+      const stats = response.data.data || response.data; // handle both formats
+      setPublicStats(stats);
     } catch (err) {
       console.error('Failed to fetch public stats:', err);
     }
@@ -142,9 +144,12 @@ const Dashboard = () => {
   const fetchPublicVerifications = async () => {
     try {
       const response = await api.get('/public/verifications');
-      setPublicVerifications(response.data);
+      // Handle different response structures
+      const data = response.data.data || response.data || [];
+      setPublicVerifications(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to fetch public verifications:', err);
+      setPublicVerifications([]);
     }
   };
 

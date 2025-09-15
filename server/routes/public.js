@@ -4,7 +4,7 @@ const sendMail = require('../utility/mailer');
 const path = require('path');
 const fs = require('fs');
 const { body, validationResult } = require('express-validator');
-const { PublicToken, PublicVerification, Student, Institution } = require('../models');
+const { PublicToken, PublicVerification, Student, Institution, VerificationLog } = require('../models');
 
 const router = express.Router();
 

@@ -11,57 +11,55 @@ const { body, validationResult } = require('express-validator');
 const db = require('../config/database');
 
 // Get verifications by institution (SQLite compatible)
+// Verifications by institution chart (SQLite safe)
 router.get('/chart/verifications-by-institution', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
-    const results = await VerificationLog.findAll({
+    const verificationsByInstitution = await VerificationLog.findAll({
       attributes: [
-        [fn('COUNT', col('id')), 'count'],
-        [col('Institution.name'), 'institution']
+        [Sequelize.fn('COUNT', Sequelize.col('VerificationLog.id')), 'count'], // fully qualified
+        [Sequelize.col('Institution.name'), 'institution']
       ],
       include: [{
         model: Institution,
-        attributes: [],
-        required: true
+        attributes: []
       }],
       group: ['Institution.name'],
-      order: [[fn('COUNT', col('id')), 'DESC']],
+      order: [[Sequelize.fn('COUNT', Sequelize.col('VerificationLog.id')), 'DESC']],
       limit: 10,
       raw: true
     });
 
-    res.json(results);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch verification data' });
+    res.json(verificationsByInstitution);
+  } catch (error) {
+    console.error('Verifications by institution error:', error);
+    res.status(500).json({ error: 'Failed to fetch institution data' });
   }
 });
 
-// Get verification success rate (SQLite compatible)
+// ✅ Single success-rate endpoint
 router.get('/chart/success-rate', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
-    // First ensure the status column exists
-    const tableInfo = await db.query("PRAGMA table_info(VerificationLogs)");
-    const hasStatusColumn = tableInfo[0].some(col => col.name === 'status');
-    
-    if (!hasStatusColumn) {
-      return res.status(400).json({ 
-        error: 'Status column not found in VerificationLogs table',
-        solution: 'Run database migration to add status column'
-      });
-    }
-
-    const results = await VerificationLog.findAll({
+    const successRate = await VerificationLog.findAll({
       attributes: [
-        'status',
-        [fn('COUNT', col('id')), 'value']
+        'success',
+        [Sequelize.fn('COUNT', Sequelize.col('VerificationLog.id')), 'count'] // fully qualified
       ],
-      group: ['status'],
+      group: ['success'],
       raw: true
     });
 
-    res.json(results);
-  } catch (err) {
-    console.error(err);
+    const total = successRate.reduce((sum, item) => sum + parseInt(item.count, 10), 0);
+    const successCount = successRate.find(item => item.success === 1 || item.success === true)?.count || 0;
+    const failureCount = successRate.find(item => item.success === 0 || item.success === false)?.count || 0;
+
+    res.json({
+      successRate: total > 0 ? ((successCount / total) * 100).toFixed(2) : 0,
+      total,
+      success: successCount,
+      failure: failureCount
+    });
+  } catch (error) {
+    console.error('Success rate error:', error);
     res.status(500).json({ error: 'Failed to fetch success rate data' });
   }
 });
@@ -94,33 +92,6 @@ router.get('/chart/verifications-over-time', authenticateToken, requireRole('adm
   }
 });
 
-// Success rate chart
-router.get('/chart/success-rate', authenticateToken, requireRole('admin'), async (req, res) => {
-  try {
-    const successRate = await VerificationLog.findAll({
-      attributes: [
-        'success',
-        [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']
-      ],
-      group: ['success'],
-      raw: true
-    });
-
-    const total = successRate.reduce((sum, item) => sum + parseInt(item.count), 0);
-    const successCount = successRate.find(item => item.success === 1)?.count || 0;
-    const failureCount = successRate.find(item => item.success === 0)?.count || 0;
-
-    res.json({
-      successRate: total > 0 ? ((successCount / total) * 100).toFixed(2) : 0,
-      total,
-      success: successCount,
-      failure: failureCount
-    });
-  } catch (error) {
-    console.error('Success rate error:', error);
-    res.status(500).json({ error: 'Failed to fetch success rate data' });
-  }
-});
 
 // Verifications by institution chart
 router.get('/chart/verifications-by-institution', authenticateToken, requireRole('admin'), async (req, res) => {
@@ -166,34 +137,33 @@ router.get('/public-verifications', authenticateToken, requireRole('admin'), asy
   }
 });
 
-// Get public verification stats
-router.get('/public-verification-stats', authenticateToken, requireRole('admin'), async (req, res) => {
+router.get("/stats", async (req, res) => {
   try {
-    const [
-      totalVerifications,
-      successfulVerifications,
-      totalTokensSold,
-      totalRevenue
-    ] = await Promise.all([
-      PublicVerification.count(),
-      PublicVerification.count({ where: { success: true } }),
-      PublicToken.count({ where: { status: 'used' } }),
-      PublicToken.sum('amount', { where: { status: 'used' } }) || 0
-    ]);
+    const totalVerifications = await PublicVerification.count({ paranoid: false });
+    const successfulVerifications = await PublicVerification.count({
+      where: { success: true },
+      paranoid: false
+    });
+    const totalTokensSold = await PublicToken.count({ where: { status: "used" } });
+    const totalRevenue = (await PublicToken.sum("amount", { where: { status: "used" } })) || 0;
+
+    const successRate = totalVerifications > 0 
+      ? Math.round((successfulVerifications / totalVerifications) * 100) 
+      : 0;
 
     res.json({
       totalVerifications,
       successfulVerifications,
-      failedVerifications: totalVerifications - successfulVerifications,
       totalTokensSold,
       totalRevenue,
-      successRate: totalVerifications > 0 ? ((successfulVerifications / totalVerifications) * 100).toFixed(1) : 0
+      successRate
     });
   } catch (error) {
-    console.error('Error fetching public verification stats:', error);
-    res.status(500).json({ error: 'Failed to fetch stats' });
+    console.error("Public stats error:", error);
+    res.status(500).json({ error: "Failed to fetch public stats" });
   }
 });
+
 
 router.post('/login', [
   body('email')
