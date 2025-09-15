@@ -15,6 +15,71 @@ const generateTokenCode = () => {
   return `PUB-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 };
 
+// Public verification stats
+router.get('/verifications', async (req, res) => {
+  try {
+    const totalVerifications = await VerificationLog.count();
+    const successfulVerifications = await VerificationLog.count({
+      where: { success: true }
+    });
+    const institutionsCount = await Institution.count();
+    const studentsCount = await Student.count();
+
+    res.json({
+      totalVerifications,
+      successfulVerifications,
+      successRate: totalVerifications > 0 
+        ? ((successfulVerifications / totalVerifications) * 100).toFixed(2)
+        : 0,
+      institutionsCount,
+      studentsCount
+    });
+  } catch (error) {
+    console.error('Public verifications error:', error);
+    res.status(500).json({ error: 'Failed to fetch verification stats' });
+  }
+});
+
+// Public general stats
+router.get('/stats', async (req, res) => {
+  try {
+    const [
+      totalVerifications,
+      institutionsCount,
+      studentsCount,
+      recentVerifications
+    ] = await Promise.all([
+      VerificationLog.count(),
+      Institution.count(),
+      Student.count(),
+      VerificationLog.findAll({
+        limit: 5,
+        order: [['createdAt', 'DESC']],
+        include: [{
+          model: Institution,
+          attributes: ['name']
+        }]
+      })
+    ]);
+
+    res.json({
+      totalVerifications,
+      institutionsCount,
+      studentsCount,
+      recentActivity: recentVerifications.map(v => ({
+        id: v.id,
+        certificateNumber: v.certificateNumber,
+        success: v.success,
+        createdAt: v.createdAt,
+        institution: v.Institution?.name
+      }))
+    });
+  } catch (error) {
+    console.error('Public stats error:', error);
+    res.status(500).json({ error: 'Failed to fetch public stats' });
+  }
+});
+
 // Purchase verification token
 router.post('/purchase-token', [
   body('email').isEmail().withMessage('Valid email is required'),

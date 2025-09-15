@@ -69,34 +69,81 @@ router.get('/chart/success-rate', authenticateToken, requireRole('admin'), async
 // Get verifications over time (SQLite compatible)
 router.get('/chart/verifications-over-time', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
-    // SQLite doesn't support INTERVAL syntax, so we calculate the date in JS
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const results = await VerificationLog.findAll({
+    const verifications = await VerificationLog.findAll({
       attributes: [
-        [fn('date', col('createdAt')), 'date'],
-        [fn('COUNT', col('id')), 'count']
+        [Sequelize.fn('date', Sequelize.col('createdAt')), 'date'],
+        [Sequelize.fn('COUNT', Sequelize.col('VerificationLog.id')), 'count']
       ],
       where: {
-        created_at: {
-          [Op.gte]: thirtyDaysAgo
+        createdAt: {
+          [Sequelize.Op.gte]: thirtyDaysAgo
         }
       },
-      group: [fn('date', col('createdAt'))],
-      order: [[fn('date', col('createdAt')), 'ASC']],
+      group: [Sequelize.fn('date', Sequelize.col('createdAt'))],
+      order: [[Sequelize.fn('date', Sequelize.col('createdAt')), 'ASC']],
       raw: true
     });
 
-    const formattedData = results.map(row => ({
-      date: new Date(row.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      count: row.count
-    }));
+    res.json(verifications);
+  } catch (error) {
+    console.error('Verifications over time error:', error);
+    res.status(500).json({ error: 'Failed to fetch verifications data' });
+  }
+});
 
-    res.json(formattedData);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch timeline data' });
+// Success rate chart
+router.get('/chart/success-rate', authenticateToken, requireRole('admin'), async (req, res) => {
+  try {
+    const successRate = await VerificationLog.findAll({
+      attributes: [
+        'success',
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']
+      ],
+      group: ['success'],
+      raw: true
+    });
+
+    const total = successRate.reduce((sum, item) => sum + parseInt(item.count), 0);
+    const successCount = successRate.find(item => item.success === 1)?.count || 0;
+    const failureCount = successRate.find(item => item.success === 0)?.count || 0;
+
+    res.json({
+      successRate: total > 0 ? ((successCount / total) * 100).toFixed(2) : 0,
+      total,
+      success: successCount,
+      failure: failureCount
+    });
+  } catch (error) {
+    console.error('Success rate error:', error);
+    res.status(500).json({ error: 'Failed to fetch success rate data' });
+  }
+});
+
+// Verifications by institution chart
+router.get('/chart/verifications-by-institution', authenticateToken, requireRole('admin'), async (req, res) => {
+  try {
+    const verificationsByInstitution = await VerificationLog.findAll({
+      attributes: [
+        [Sequelize.fn('COUNT', Sequelize.col('VerificationLog.id')), 'count'],
+        [Sequelize.col('Institution.name'), 'institution']
+      ],
+      include: [{
+        model: Institution,
+        attributes: []
+      }],
+      group: ['Institution.name'],
+      order: [[Sequelize.fn('COUNT', Sequelize.col('VerificationLog.id')), 'DESC']],
+      limit: 10,
+      raw: true
+    });
+
+    res.json(verificationsByInstitution);
+  } catch (error) {
+    console.error('Verifications by institution error:', error);
+    res.status(500).json({ error: 'Failed to fetch institution data' });
   }
 });
 
